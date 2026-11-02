@@ -11,7 +11,7 @@ It all runs in the browser. No upload server, no accounts.
 - Drag, resize, and rotate it on the logo
 - Pick a motion: jump, spin, sway, bounce
 - Download an animated SVG or a still PNG
-- See examples on Cloudflare, Vercel, Apple, and other logos (marks from Simple Icons, CC0)
+- See examples on Cloudflare, Vercel, Apple, and other wordmarks
 
 SVGs are cleaned with DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`). Scripts, `foreignObject`, external `use`, and `href` / `xlink:href` pointing at other pages or files are stripped. On screen the logo is an `<img>` from a local blob, never injected raw.
 
