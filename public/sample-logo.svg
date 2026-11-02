@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="12 32 548 156" width="548" height="156" fill="none">
+  <title>NIDO</title>
+  <g transform="translate(24 36)">
+    <path d="M18 92 C10 70 22 42 48 32 C54 14 78 8 92 24 C108 10 132 16 136 38 C160 46 168 74 154 96 C146 118 100 130 64 120 C36 124 22 110 18 92 Z" fill="#1f3d2b"/>
+    <path d="M46 78 C50 58 78 50 96 64 C108 52 130 58 132 76 C136 96 108 110 80 104 C58 110 44 96 46 78 Z" fill="#f6eee4"/>
+    <circle cx="88" cy="80" r="7" fill="#c43b3b"/>
+    <circle cx="86" cy="77" r="2.2" fill="#ffd4d4"/>
+    <path d="M70 54 C76 40 98 38 104 54" fill="none" stroke="#d4a054" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <g fill="none" stroke="#1f3d2b" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M214 64 V156 L286 64 V156"/>
+    <path d="M316 64 V156"/>
+    <path d="M352 64 V156 C352 156 352 156 404 156 C430 156 446 132 446 110 C446 88 430 64 404 64 H352"/>
+    <circle cx="484" cy="110" r="46"/>
+  </g>
+</svg>

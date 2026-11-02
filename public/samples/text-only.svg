@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 160" width="420" height="160" fill="none">
+  <title>olivo</title>
+  <g fill="none" stroke="#2a1c16" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="48" cy="86" r="34"/>
+    <path d="M118 120 V52"/>
+    <path d="M154 120 V52"/>
+    <path d="M220 52 C176 52 168 120 220 120 C272 120 264 52 220 52 Z"/>
+    <path d="M286 120 V52"/>
+    <circle cx="360" cy="86" r="34"/>
+  </g>
+</svg>

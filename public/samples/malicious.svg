@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120" onload="window.__XMAS_XSS=true">
+  <script type="text/javascript">window.__XMAS_XSS=true;</script>
+  <rect width="200" height="120" fill="#c43b3b"/>
+  <text x="24" y="70" fill="#fff8f0" font-size="22" font-family="sans-serif">malicioso</text>
+</svg>
