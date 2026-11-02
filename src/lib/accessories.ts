@@ -117,42 +117,35 @@ export function accessoryMarkup(id: AccessoryId, prefix: string): string {
   }
 }
 
+function softShadow(p: string, color: string): string {
+  return `<filter id="${p}soft" x="-22%" y="-22%" width="144%" height="144%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="${color}" flood-opacity=".16"/>
+    </filter>`;
+}
+
 function santaHatMarkup(p: string): string {
   return `
     <defs>
-      <linearGradient id="${p}body" x1="20" y1="20" x2="130" y2="130" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#ff5d5d"/>
-        <stop offset=".45" stop-color="#e43333"/>
-        <stop offset="1" stop-color="#b41d2a"/>
+      <linearGradient id="${p}body" x1="36" y1="20" x2="110" y2="120" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#ff6b73"/>
+        <stop offset="1" stop-color="#e02438"/>
       </linearGradient>
       <linearGradient id="${p}fur" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#fffdf8"/>
-        <stop offset="1" stop-color="#e8dfd2"/>
-      </linearGradient>
-      <radialGradient id="${p}pom" cx="38%" cy="32%" r="70%">
         <stop offset="0" stop-color="#ffffff"/>
-        <stop offset="1" stop-color="#e5d8c8"/>
+        <stop offset="1" stop-color="#f0e2d4"/>
+      </linearGradient>
+      <radialGradient id="${p}pom" cx="34%" cy="30%" r="70%">
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset="1" stop-color="#f0e2d4"/>
       </radialGradient>
-      <filter id="${p}soft" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#7a2a22" flood-opacity=".28"/>
-      </filter>
+      ${softShadow(p, "#8a2430")}
     </defs>
     <g filter="url(#${p}soft)">
-      <path fill="url(#${p}body)" d="M30 108 C38 70 56 38 82 22 C100 10 130 16 140 38 C148 54 138 66 122 60 C106 44 88 48 82 66 C76 84 94 98 116 108 C86 112 50 114 30 108 Z"/>
-      <path fill="none" stroke="#9a1c26" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3 7" opacity=".45" d="M52 96 C64 70 80 42 100 28"/>
-      <ellipse cx="136" cy="36" rx="15" ry="14.5" fill="url(#${p}pom)"/>
-      <ellipse cx="131" cy="31" rx="5" ry="3.6" fill="#fff" opacity=".85"/>
-      <path fill="url(#${p}fur)" d="M18 104 C24 92 46 90 64 94 C82 86 104 86 122 94 C140 88 152 96 150 110 C148 124 128 128 108 124 C88 132 58 132 38 126 C20 130 12 118 18 104 Z"/>
-      <ellipse cx="40" cy="108" rx="10" ry="8" fill="#fffaf3"/>
-      <ellipse cx="68" cy="104" rx="11" ry="8.5" fill="#fffaf3"/>
-      <ellipse cx="96" cy="104" rx="10.5" ry="8" fill="#fffaf3"/>
-      <ellipse cx="122" cy="108" rx="10" ry="7.5" fill="#fffaf3"/>
-      <g transform="translate(24 96)">
-        <ellipse cx="8" cy="6" rx="5" ry="8" fill="#2f7a3e" transform="rotate(-28)"/>
-        <ellipse cx="16" cy="7" rx="4.5" ry="7.5" fill="#245f31" transform="rotate(32)"/>
-        <circle cx="12" cy="10" r="3.1" fill="#d62828"/>
-        <circle cx="11" cy="8.8" r="1" fill="#ffd8d8"/>
-      </g>
+      <path fill="url(#${p}body)" d="M34 110 C40 62 74 24 110 20 C130 17 144 32 136 50 C130 64 114 62 104 72 C86 92 94 108 124 114 C88 122 46 122 34 110 Z"/>
+      <circle cx="130" cy="36" r="17" fill="url(#${p}pom)"/>
+      <rect x="18" y="102" width="124" height="34" rx="17" fill="url(#${p}fur)"/>
+      <ellipse cx="124" cy="30" rx="6" ry="4.5" fill="#fff" opacity=".9"/>
+      <ellipse cx="46" cy="114" rx="16" ry="8" fill="#fff" opacity=".45"/>
     </g>
   `;
 }
@@ -161,29 +154,26 @@ function beardMarkup(p: string): string {
   return `
     <defs>
       <linearGradient id="${p}wool" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#fffdf9"/>
-        <stop offset="1" stop-color="#e3d8ca"/>
+        <stop offset="0" stop-color="#ffffff"/>
+        <stop offset="1" stop-color="#f3e6d8"/>
       </linearGradient>
-      <linearGradient id="${p}shade" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#f4ebe0"/>
-        <stop offset="1" stop-color="#cfc2b3"/>
-      </linearGradient>
-      <filter id="${p}soft" x="-15%" y="-15%" width="130%" height="140%">
-        <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#6b5344" flood-opacity=".2"/>
-      </filter>
+      <radialGradient id="${p}puff" cx="38%" cy="32%" r="70%">
+        <stop offset="0" stop-color="#fffdfb"/>
+        <stop offset="1" stop-color="#f0e2d4"/>
+      </radialGradient>
+      ${softShadow(p, "#6b5344")}
     </defs>
     <g filter="url(#${p}soft)">
-      <path fill="url(#${p}shade)" d="M22 48 C18 22 48 10 70 22 C86 8 112 8 128 24 C154 12 172 32 164 58 C176 78 168 108 142 124 C118 140 70 142 46 124 C18 110 8 78 22 48 Z"/>
-      <ellipse cx="48" cy="58" rx="28" ry="22" fill="url(#${p}wool)"/>
-      <ellipse cx="90" cy="66" rx="34" ry="26" fill="url(#${p}wool)"/>
-      <ellipse cx="132" cy="58" rx="27" ry="22" fill="url(#${p}wool)"/>
-      <ellipse cx="64" cy="92" rx="26" ry="20" fill="#fffaf4"/>
-      <ellipse cx="112" cy="94" rx="27" ry="21" fill="#fffaf4"/>
-      <ellipse cx="88" cy="112" rx="24" ry="16" fill="#f7efe6"/>
-      <path fill="#fffdf9" d="M40 44 C48 22 72 20 86 36 C78 28 62 30 54 44 C48 52 42 52 40 44 Z"/>
-      <path fill="#fffdf9" d="M96 36 C110 18 138 22 146 44 C142 52 134 52 128 44 C118 28 104 28 96 36 Z"/>
-      <path fill="none" stroke="#d7c7b6" stroke-width="2" stroke-linecap="round" d="M58 78 C70 88 104 88 118 76"/>
-      <path fill="none" stroke="#eadfd3" stroke-width="3" stroke-linecap="round" d="M70 104 C82 114 100 114 112 102"/>
+      <ellipse cx="90" cy="78" rx="66" ry="48" fill="#efe3d6"/>
+      <circle cx="50" cy="60" r="32" fill="url(#${p}puff)"/>
+      <circle cx="90" cy="50" r="36" fill="url(#${p}wool)"/>
+      <circle cx="130" cy="60" r="32" fill="url(#${p}puff)"/>
+      <circle cx="66" cy="92" r="30" fill="url(#${p}wool)"/>
+      <circle cx="114" cy="92" r="30" fill="url(#${p}wool)"/>
+      <circle cx="90" cy="110" r="24" fill="#f7eee4"/>
+      <ellipse cx="70" cy="42" rx="18" ry="11" fill="#fffdfb"/>
+      <ellipse cx="110" cy="42" rx="18" ry="11" fill="#fffdfb"/>
+      <ellipse cx="78" cy="52" rx="8" ry="5" fill="#fff" opacity=".7"/>
     </g>
   `;
 }
@@ -192,31 +182,25 @@ function caneMarkup(p: string): string {
   return `
     <defs>
       <linearGradient id="${p}shine" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
-        <stop offset=".45" stop-color="#ffffff" stop-opacity="0"/>
+        <stop offset="0" stop-color="#ffffff" stop-opacity=".6"/>
+        <stop offset=".5" stop-color="#ffffff" stop-opacity="0"/>
       </linearGradient>
       <mask id="${p}mask">
-        <path d="M46 166 V74 C46 30 96 16 112 46 C122 64 108 84 86 76" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M42 166 V72 C42 26 102 16 110 52 C116 74 96 88 74 78" fill="none" stroke="#fff" stroke-width="32" stroke-linecap="round" stroke-linejoin="round"/>
       </mask>
-      <filter id="${p}soft" x="-20%" y="-10%" width="140%" height="130%">
-        <feDropShadow dx="0" dy="3" stdDeviation="2" flood-color="#7a2a22" flood-opacity=".22"/>
-      </filter>
+      ${softShadow(p, "#8a2430")}
     </defs>
     <g filter="url(#${p}soft)">
-      <rect x="0" y="0" width="120" height="180" fill="#f7f1e8" mask="url(#${p}mask)"/>
+      <rect x="0" y="0" width="120" height="180" fill="#fff6ec" mask="url(#${p}mask)"/>
       <g mask="url(#${p}mask)">
-        <g transform="rotate(-22 60 90)">
-          <rect x="-20" y="8" width="22" height="200" fill="#d31f2b"/>
-          <rect x="24" y="8" width="22" height="200" fill="#d31f2b"/>
-          <rect x="68" y="8" width="22" height="200" fill="#d31f2b"/>
-          <rect x="112" y="8" width="22" height="200" fill="#d31f2b"/>
+        <g transform="rotate(-24 60 90)">
+          <rect x="-24" y="4" width="24" height="210" rx="8" fill="#f43b4a"/>
+          <rect x="24" y="4" width="24" height="210" rx="8" fill="#f43b4a"/>
+          <rect x="72" y="4" width="24" height="210" rx="8" fill="#f43b4a"/>
+          <rect x="120" y="4" width="24" height="210" rx="8" fill="#f43b4a"/>
         </g>
       </g>
-      <path d="M46 166 V74 C46 30 96 16 112 46 C122 64 108 84 86 76" fill="none" stroke="url(#${p}shine)" stroke-width="10" stroke-linecap="round"/>
-      <g transform="translate(78 58)">
-        <path d="M0 8 C-10 -4 -2 -12 8 -2 C18 -12 26 -2 16 8 C10 16 6 16 0 8 Z" fill="#c43b3b"/>
-        <path d="M8 -2 C8 -12 22 -10 20 0" fill="none" stroke="#2f7a3e" stroke-width="3" stroke-linecap="round"/>
-      </g>
+      <path d="M42 166 V72 C42 26 102 16 110 52 C116 74 96 88 74 78" fill="none" stroke="url(#${p}shine)" stroke-width="12" stroke-linecap="round"/>
     </g>
   `;
 }
@@ -224,35 +208,27 @@ function caneMarkup(p: string): string {
 function elfHatMarkup(p: string): string {
   return `
     <defs>
-      <linearGradient id="${p}green" x1="30" y1="10" x2="120" y2="150" gradientUnits="userSpaceOnUse">
-        <stop offset="0" stop-color="#5dbe6a"/>
-        <stop offset=".5" stop-color="#2f8a45"/>
-        <stop offset="1" stop-color="#1b5a2e"/>
+      <linearGradient id="${p}green" x1="30" y1="8" x2="120" y2="140" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#5ee08a"/>
+        <stop offset="1" stop-color="#2aa85a"/>
       </linearGradient>
       <linearGradient id="${p}brim" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#ef4a4a"/>
-        <stop offset="1" stop-color="#a81f2a"/>
+        <stop offset="0" stop-color="#ff6b73"/>
+        <stop offset="1" stop-color="#e02438"/>
       </linearGradient>
       <radialGradient id="${p}bell" cx="35%" cy="30%" r="70%">
-        <stop offset="0" stop-color="#ffe38a"/>
-        <stop offset="1" stop-color="#d0891a"/>
+        <stop offset="0" stop-color="#ffe89a"/>
+        <stop offset="1" stop-color="#f0b429"/>
       </radialGradient>
-      <filter id="${p}soft" x="-20%" y="-20%" width="140%" height="140%">
-        <feDropShadow dx="0" dy="3" stdDeviation="2.2" flood-color="#16351f" flood-opacity=".28"/>
-      </filter>
+      ${softShadow(p, "#1f5a32")}
     </defs>
     <g filter="url(#${p}soft)">
-      <path fill="url(#${p}green)" d="M34 118 C28 96 48 70 70 42 C86 20 78 10 62 16 C44 24 28 20 24 10 C36 6 58 2 78 10 C104 20 122 48 128 78 C118 70 100 78 96 94 C90 112 110 120 124 122 C96 126 58 128 36 120 C34 120 34 119 34 118 Z"/>
-      <path fill="none" stroke="#0f3d22" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 8" opacity=".4" d="M48 108 C62 78 78 48 70 28"/>
-      <circle cx="28" cy="12" r="11" fill="url(#${p}bell)"/>
-      <circle cx="25" cy="8" r="3.2" fill="#fff3c4" opacity=".8"/>
-      <rect x="24" y="20" width="8" height="7" rx="2" fill="#b87412"/>
-      <circle cx="28" cy="28" r="2.3" fill="#8a560c"/>
-      <path fill="url(#${p}brim)" d="M18 118 C26 104 50 100 74 104 C98 98 128 102 138 116 C142 130 122 142 96 138 C74 146 42 146 24 136 C12 130 12 122 18 118 Z"/>
-      <path fill="none" stroke="#f2c14b" stroke-width="2.1" stroke-linecap="round" stroke-dasharray="2 8" d="M30 124 C52 116 86 116 118 126"/>
-      <circle cx="44" cy="122" r="3" fill="#f2c14b"/>
-      <circle cx="74" cy="120" r="3" fill="#f2c14b"/>
-      <circle cx="104" cy="124" r="3" fill="#f2c14b"/>
+      <path fill="url(#${p}green)" d="M32 124 C28 78 56 30 90 18 C106 12 98 4 74 10 C54 16 34 8 34 4 C50 0 86 4 106 20 C128 36 134 82 130 122 C98 114 88 122 90 132 Q94 144 124 138 C92 150 48 146 32 124 Z"/>
+      <circle cx="36" cy="10" r="13" fill="url(#${p}bell)"/>
+      <rect x="31" y="20" width="10" height="7" rx="3" fill="#e09a18"/>
+      <ellipse cx="32" cy="6" rx="4.5" ry="3.2" fill="#fff3c4" opacity=".85"/>
+      <rect x="18" y="118" width="118" height="30" rx="15" fill="url(#${p}brim)"/>
+      <ellipse cx="44" cy="128" rx="12" ry="6" fill="#fff" opacity=".28"/>
     </g>
   `;
 }

@@ -91,10 +91,3 @@ export async function logoFromFile(file: File): Promise<LogoAsset> {
   }
 }
 
-export async function loadSampleLogo(): Promise<LogoAsset> {
-  const response = await fetch("/sample-logo.svg");
-  if (!response.ok) {
-    throw new Error("No se pudo cargar el logo de ejemplo.");
-  }
-  return logoFromSvgText(await response.text(), "nido.svg");
-}

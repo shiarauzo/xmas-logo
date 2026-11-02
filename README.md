@@ -7,11 +7,10 @@ Todo corre en el navegador. No hay servidor de subida ni cuentas.
 ## Qué puedes hacer
 
 - Subir un SVG, PNG, JPG o WebP
-- Elegir un adorno dibujado a mano
+- Elegir un adorno
 - Arrastrarlo, cambiar el tamaño y girarlo (también con el dedo)
 - Usar atajos: encima del logo o en una letra
 - Bajar un SVG animado o un PNG quieto
-- El ejemplo NIDO aparece al abrir la página
 
 Los SVG se limpian con DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`) y además se quitan scripts, `foreignObject`, `use` externos y referencias `href` / `xlink:href` hacia otras páginas o archivos. En pantalla el logo se ve como `<img>` desde un blob local, no se inyecta en crudo.
 

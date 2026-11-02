@@ -9,7 +9,7 @@ import {
   scanLetterFromImageData,
   sitOnLetter,
 } from "@/lib/letter";
-import { loadSampleLogo, logoFromFile, releaseLogo } from "@/lib/logo";
+import { logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
   AccessoryId,
   AccessoryTransform,
@@ -96,31 +96,32 @@ export function Studio() {
   const [playId, setPlayId] = useState(0);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<LogoAsset | null>(null);
   const uploadGen = useRef(0);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
-    let cancelled = false;
-    loadSampleLogo()
-      .then((sample) => {
-        if (cancelled) {
-          releaseLogo(sample);
-          return;
-        }
-        logoRef.current = sample;
-        setLogo(sample);
-        setTransform(placementFor("onTop", "hat", sample));
-      })
-      .catch(() => {
-        if (!cancelled) setMessage("No se pudo cargar el ejemplo.");
-      });
     return () => {
-      cancelled = true;
       releaseLogo(logoRef.current);
     };
   }, []);
+
+  const openPicker = () => fileRef.current?.click();
+
+  const onDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setDragging(true);
+  };
+
+  const onDragLeave = () => setDragging(false);
+
+  const onDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setDragging(false);
+    void onUpload(event.dataTransfer.files[0]);
+  };
 
   const replaceLogo = async (next: LogoAsset) => {
     releaseLogo(logoRef.current);
@@ -252,9 +253,38 @@ export function Studio() {
                 reducedMotion={reducedMotion}
               />
             ) : (
-              <div className="flex h-full items-center justify-center rounded-xl border border-border bg-checker text-sm text-muted-foreground">
-                Cargando…
-              </div>
+              <button
+                type="button"
+                onClick={openPicker}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                disabled={busy}
+                className={`flex h-full min-h-[240px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed ${press} ${focusRing} ${
+                  dragging
+                    ? "border-foreground bg-accent"
+                    : "border-muted-foreground/25 bg-muted/30"
+                }`}
+              >
+                <span className="flex size-11 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="size-5"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M12 5v14M5 12h14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {dragging ? "Suelta" : "Sube un logo"}
+                </span>
+              </button>
             )}
           </div>
 
@@ -271,30 +301,13 @@ export function Studio() {
                 event.currentTarget.value = "";
               }}
             />
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className={`${btn} flex-1 border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
-                onClick={() => fileRef.current?.click()}
-              >
-                Subir logo
-              </button>
-              <button
-                type="button"
-                className={`${btn} flex-1 border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
-                onClick={async () => {
-                  try {
-                    await replaceLogo(await loadSampleLogo());
-                  } catch (error) {
-                    setMessage(
-                      error instanceof Error ? error.message : "No se pudo cargar.",
-                    );
-                  }
-                }}
-              >
-                Ejemplo
-              </button>
-            </div>
+            <button
+              type="button"
+              className={`${btn} w-full border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
+              onClick={openPicker}
+            >
+              Subir logo
+            </button>
 
             <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
               {ACCESSORIES.map((item) => {
@@ -326,6 +339,7 @@ export function Studio() {
               <button
                 type="button"
                 aria-pressed={preset === "onTop"}
+                disabled={!logo}
                 className={`${btn} ${
                   preset === "onTop"
                     ? "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -338,6 +352,7 @@ export function Studio() {
               <button
                 type="button"
                 aria-pressed={preset === "onLetter"}
+                disabled={!logo}
                 className={`${btn} ${
                   preset === "onLetter"
                     ? "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -348,7 +363,7 @@ export function Studio() {
                 En una letra
               </button>
             </div>
-            <label className="mt-4 block text-sm font-medium text-foreground">
+            <label className={`mt-4 block text-sm font-medium text-foreground ${logo ? "" : "opacity-50"}`}>
               Tamaño
               <input
                 type="range"
@@ -356,6 +371,7 @@ export function Studio() {
                 max="2.4"
                 step="0.01"
                 value={transform.scale}
+                disabled={!logo}
                 onChange={(event) =>
                   setTransform((current) => ({
                     ...current,
@@ -365,7 +381,7 @@ export function Studio() {
                 className="mt-2 w-full accent-primary"
               />
             </label>
-            <label className="mt-3 block text-sm font-medium text-foreground">
+            <label className={`mt-3 block text-sm font-medium text-foreground ${logo ? "" : "opacity-50"}`}>
               Giro
               <input
                 type="range"
@@ -373,6 +389,7 @@ export function Studio() {
                 max="180"
                 step="1"
                 value={transform.rotation}
+                disabled={!logo}
                 onChange={(event) =>
                   setTransform((current) => ({
                     ...current,
