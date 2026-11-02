@@ -2,41 +2,37 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ACCESSORY_BASE_SIZE, ACCESSORY_BY_ID } from "@/lib/accessories";
-import type { AccessoryId, AccessoryTransform, LogoAsset } from "@/lib/types";
+import { clamp, stageInsets } from "@/lib/geometry";
+import { bandToPercents, scanLetterFromImageData, sitOnLetter } from "@/lib/letter";
+import type {
+  AccessoryId,
+  AccessoryTransform,
+  LogoAsset,
+  PlacementPreset,
+} from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
 
 type PreviewStageProps = {
   logo: LogoAsset;
   accessoryId: AccessoryId;
+  preset: PlacementPreset;
   transform: AccessoryTransform;
   onChange: (next: AccessoryTransform) => void;
   playId: number;
   reducedMotion: boolean;
 };
 
-type PointerMode = "drag" | "resize" | "rotate";
-
 type PointerSession = {
-  mode: PointerMode;
   pointerId: number;
   startX: number;
   startY: number;
-  originX: number;
-  originY: number;
   start: AccessoryTransform;
 };
-
-function clamp(value: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, value));
-}
-
-function angleBetween(cx: number, cy: number, x: number, y: number) {
-  return (Math.atan2(y - cy, x - cx) * 180) / Math.PI;
-}
 
 export function PreviewStage({
   logo,
   accessoryId,
+  preset,
   transform,
   onChange,
   playId,
@@ -44,22 +40,35 @@ export function PreviewStage({
 }: PreviewStageProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
   const sessionRef = useRef<PointerSession | null>(null);
   const [box, setBox] = useState({ x: 0, y: 0, w: 0, h: 0 });
   const accessory = ACCESSORY_BY_ID[accessoryId];
   const [vbW, vbH] = accessory.viewBox;
+  const insets = stageInsets(
+    logo.naturalWidth,
+    logo.naturalHeight,
+    accessoryId,
+    transform,
+  );
 
   const measure = useCallback(() => {
     const frame = frameRef.current;
-    const image = frame?.querySelector("img");
-    if (!frame || !image) return;
+    const image = imageRef.current;
+    if (!frame || !image || image.naturalWidth < 1) return;
     const frameRect = frame.getBoundingClientRect();
     const imageRect = image.getBoundingClientRect();
+    const scale = Math.min(
+      imageRect.width / image.naturalWidth,
+      imageRect.height / image.naturalHeight,
+    );
+    const w = image.naturalWidth * scale;
+    const h = image.naturalHeight * scale;
     setBox({
-      x: imageRect.left - frameRect.left,
-      y: imageRect.top - frameRect.top,
-      w: imageRect.width,
-      h: imageRect.height,
+      x: imageRect.left - frameRect.left + (imageRect.width - w) / 2,
+      y: imageRect.top - frameRect.top + (imageRect.height - h) / 2,
+      w,
+      h,
     });
   }, []);
 
@@ -74,10 +83,12 @@ export function PreviewStage({
       observer.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [measure, logo.objectUrl]);
+  }, [measure, logo.objectUrl, insets.top, insets.right, insets.bottom, insets.left]);
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  const transformRef = useRef(transform);
+  transformRef.current = transform;
 
   function onPointerMove(event: PointerEvent) {
     const session = sessionRef.current;
@@ -85,51 +96,12 @@ export function PreviewStage({
     if (!session || !layer) return;
     const rect = layer.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1) return;
-    const update = onChangeRef.current;
-
-    if (session.mode === "drag") {
-      const dx = ((event.clientX - session.startX) / rect.width) * 100;
-      const dy = ((event.clientY - session.startY) / rect.height) * 100;
-      update({
-        ...session.start,
-        x: clamp(session.start.x + dx, -8, 108),
-        y: clamp(session.start.y + dy, -8, 108),
-      });
-      return;
-    }
-
-    if (session.mode === "resize") {
-      const startDist = Math.hypot(
-        session.startX - session.originX,
-        session.startY - session.originY,
-      );
-      const nextDist = Math.hypot(
-        event.clientX - session.originX,
-        event.clientY - session.originY,
-      );
-      if (startDist < 4) return;
-      update({
-        ...session.start,
-        scale: clamp(session.start.scale * (nextDist / startDist), 0.22, 2.4),
-      });
-      return;
-    }
-
-    const startAngle = angleBetween(
-      session.originX,
-      session.originY,
-      session.startX,
-      session.startY,
-    );
-    const nextAngle = angleBetween(
-      session.originX,
-      session.originY,
-      event.clientX,
-      event.clientY,
-    );
-    update({
+    const dx = ((event.clientX - session.startX) / rect.width) * 100;
+    const dy = ((event.clientY - session.startY) / rect.height) * 100;
+    onChangeRef.current({
       ...session.start,
-      rotation: Math.round(session.start.rotation + (nextAngle - startAngle)),
+      x: clamp(session.start.x + dx, -20, 120),
+      y: clamp(session.start.y + dy, -40, 130),
     });
   }
 
@@ -142,24 +114,13 @@ export function PreviewStage({
     window.removeEventListener("pointercancel", endPointer);
   }
 
-  const beginPointer = (
-    event: React.PointerEvent,
-    mode: PointerMode,
-  ) => {
+  const beginDrag = (event: React.PointerEvent) => {
     event.preventDefault();
     event.stopPropagation();
-    const layer = layerRef.current;
-    if (!layer) return;
-    const rect = layer.getBoundingClientRect();
-    const originX = rect.left + (transform.x / 100) * rect.width;
-    const originY = rect.top + (transform.y / 100) * rect.height;
     sessionRef.current = {
-      mode,
       pointerId: event.pointerId,
       startX: event.clientX,
       startY: event.clientY,
-      originX,
-      originY,
       start: transform,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -168,24 +129,114 @@ export function PreviewStage({
     window.addEventListener("pointercancel", endPointer);
   };
 
+  const placeOnLetter = async (clientX: number, clientY: number) => {
+    const image = imageRef.current;
+    if (!image || image.naturalWidth < 1) return;
+    const imageRect = image.getBoundingClientRect();
+    const scale = Math.min(
+      imageRect.width / image.naturalWidth,
+      imageRect.height / image.naturalHeight,
+    );
+    const w = image.naturalWidth * scale;
+    const h = image.naturalHeight * scale;
+    const rect = {
+      left: imageRect.left + (imageRect.width - w) / 2,
+      top: imageRect.top + (imageRect.height - h) / 2,
+      width: w,
+      height: h,
+    };
+    if (rect.width < 1 || rect.height < 1) return;
+    const tapX = ((clientX - rect.left) / rect.width) * image.naturalWidth;
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = image.naturalWidth;
+      canvas.height = image.naturalHeight;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return;
+      ctx.drawImage(image, 0, 0);
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const band = scanLetterFromImageData(
+        pixels.data,
+        canvas.width,
+        canvas.height,
+        tapX,
+      );
+      if (!band) {
+        onChange(
+          sitOnLetter(accessoryId, logo, {
+            xPct: ((clientX - rect.left) / rect.width) * 100,
+            topPct: ((clientY - rect.top) / rect.height) * 100,
+          }),
+        );
+        return;
+      }
+      onChange(
+        sitOnLetter(
+          accessoryId,
+          logo,
+          bandToPercents(band, canvas.width, canvas.height),
+        ),
+      );
+    } catch {
+      onChange(
+        sitOnLetter(accessoryId, logo, {
+          xPct: ((clientX - rect.left) / rect.width) * 100,
+          topPct: ((clientY - rect.top) / rect.height) * 100,
+        }),
+      );
+    }
+  };
+
+  const onFramePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (preset !== "onLetter") return;
+    const target = event.target as HTMLElement;
+    if (target.closest("[data-accessory]")) return;
+    void placeOnLetter(event.clientX, event.clientY);
+  };
+
+  const onAccessoryKeyDown = (event: React.KeyboardEvent) => {
+    const step = event.shiftKey ? 4 : 1;
+    const current = transformRef.current;
+    const move = (dx: number, dy: number) => {
+      event.preventDefault();
+      onChange({
+        ...current,
+        x: clamp(current.x + dx, -20, 120),
+        y: clamp(current.y + dy, -40, 130),
+      });
+    };
+    if (event.key === "ArrowLeft") move(-step, 0);
+    if (event.key === "ArrowRight") move(step, 0);
+    if (event.key === "ArrowUp") move(0, -step);
+    if (event.key === "ArrowDown") move(0, step);
+  };
+
   return (
     <div
       ref={frameRef}
-      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-hidden rounded-[1.6rem] border border-[#e3d2bf] bg-checker px-[9%] py-[9%]"
+      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-visible bg-checker"
+      style={{
+        paddingTop: `${insets.top * 100}%`,
+        paddingRight: `${insets.right * 100}%`,
+        paddingBottom: `${insets.bottom * 100}%`,
+        paddingLeft: `${insets.left * 100}%`,
+      }}
+      onPointerDown={onFramePointerDown}
     >
       {/* The logo is an img from a sanitized blob URL so user SVG never runs inline. */}
       {/* Blob URL from a local file. next/image cannot optimize user uploads. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
+        ref={imageRef}
         src={logo.objectUrl}
         alt={logo.name}
         onLoad={measure}
-        className="max-h-full max-w-full object-contain object-center"
+        className="relative z-[1] h-full w-full object-contain object-center"
         draggable={false}
       />
       <div
         ref={layerRef}
-        className="absolute"
+        className="absolute z-[2]"
         style={{
           left: box.x,
           top: box.y,
@@ -194,7 +245,11 @@ export function PreviewStage({
         }}
       >
         <div
-          className="absolute touch-none select-none"
+          data-accessory
+          role="button"
+          tabIndex={0}
+          aria-label="Mover adorno"
+          className="absolute touch-none select-none cursor-grab rounded-xl outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold active:cursor-grabbing"
           style={{
             left: `${transform.x}%`,
             top: `${transform.y}%`,
@@ -202,6 +257,8 @@ export function PreviewStage({
             aspectRatio: `${vbW} / ${vbH}`,
             transform: `translate(-50%, -50%) rotate(${transform.rotation}deg)`,
           }}
+          onPointerDown={beginDrag}
+          onKeyDown={onAccessoryKeyDown}
         >
           <div
             key={playId}
@@ -214,34 +271,9 @@ export function PreviewStage({
             <AccessoryArt
               id={accessoryId}
               prefix={`stage-${accessoryId}-`}
-              className="h-full w-full overflow-visible"
+              className="pointer-events-none h-full w-full overflow-visible"
             />
           </div>
-          <button
-            type="button"
-            aria-label="Mover adorno"
-            className="absolute inset-0 cursor-grab rounded-xl border-2 border-dashed border-pine/50 bg-transparent active:cursor-grabbing"
-            onPointerDown={(event) => beginPointer(event, "drag")}
-          />
-          <button
-            type="button"
-            aria-label="Girar adorno"
-            className="absolute -top-8 left-1/2 z-10 h-7 w-7 -translate-x-1/2 rounded-full border border-[#e3d2bf] bg-snow text-[11px] font-bold text-pine shadow-sm"
-            onPointerDown={(event) => beginPointer(event, "rotate")}
-          >
-            ↻
-          </button>
-          {["-top-2 -left-2", "-top-2 -right-2", "-bottom-2 -left-2", "-bottom-2 -right-2"].map(
-            (place) => (
-              <button
-                key={place}
-                type="button"
-                aria-label="Cambiar tamaño"
-                className={`absolute z-10 h-4 w-4 rounded-full border-2 border-snow bg-berry shadow-sm ${place}`}
-                onPointerDown={(event) => beginPointer(event, "resize")}
-              />
-            ),
-          )}
         </div>
       </div>
     </div>

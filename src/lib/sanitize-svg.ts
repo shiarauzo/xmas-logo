@@ -1,12 +1,19 @@
 import DOMPurify from "isomorphic-dompurify";
 
 const FRAGMENT_HREF = /^#/;
+const DATA_HREF = /^data:/i;
 const EXTERNAL_URL = /url\s*\(\s*(['"]?)\s*(https?:|\/\/|\/(?!\/)|[a-z]+:)/i;
+export const BROKEN_SVG_MESSAGE =
+  "Ese SVG está dañado. Prueba con otro o usa un PNG.";
+
+function isSafeLocalRef(value: string): boolean {
+  const trimmed = value.trim();
+  return FRAGMENT_HREF.test(trimmed) || DATA_HREF.test(trimmed);
+}
 
 function isExternalRef(value: string): boolean {
   const trimmed = value.trim();
-  if (!trimmed) return false;
-  if (FRAGMENT_HREF.test(trimmed)) return false;
+  if (!trimmed || isSafeLocalRef(trimmed)) return false;
   return true;
 }
 
@@ -24,26 +31,49 @@ function serializeSvg(doc: Document): string {
   return new XMLSerializer().serializeToString(doc);
 }
 
+export function assertSvgDrawable(raw: string) {
+  const trimmed = raw.trim();
+  if (!trimmed) throw new Error(BROKEN_SVG_MESSAGE);
+  const doc = parseSvg(trimmed);
+  if (doc.querySelector("parsererror")) {
+    throw new Error(BROKEN_SVG_MESSAGE);
+  }
+  const root = doc.documentElement;
+  if (!root || root.localName !== "svg") {
+    throw new Error(BROKEN_SVG_MESSAGE);
+  }
+}
+
+function parseLength(value: string | null): number {
+  if (!value) return NaN;
+  const trimmed = value.trim();
+  if (/^-?[\d.]+(px)?$/i.test(trimmed)) return Number.parseFloat(trimmed);
+  return NaN;
+}
+
 export function sanitizeSvg(raw: string): string {
+  assertSvgDrawable(raw);
+
   const purified = DOMPurify.sanitize(raw, {
     USE_PROFILES: { svg: true, svgFilters: true },
     ADD_TAGS: ["use"],
     ADD_ATTR: ["href", "xlink:href"],
+    FORBID_TAGS: ["style"],
   });
 
   if (!purified.trim()) {
-    throw new Error("El SVG quedó vacío después de limpiarlo.");
+    throw new Error(BROKEN_SVG_MESSAGE);
   }
 
   const doc = parseSvg(purified);
   const root = doc.documentElement;
 
-  if (!root || root.localName !== "svg") {
-    throw new Error("No se pudo leer el SVG.");
+  if (!root || root.localName !== "svg" || doc.querySelector("parsererror")) {
+    throw new Error(BROKEN_SVG_MESSAGE);
   }
 
   for (const node of Array.from(
-    root.querySelectorAll("foreignObject, script, iframe, object, embed"),
+    root.querySelectorAll("foreignObject, script, iframe, object, embed, style"),
   )) {
     node.remove();
   }
@@ -94,7 +124,7 @@ export function sanitizeSvg(raw: string): string {
     }
 
     for (const attr of Array.from(el.attributes)) {
-      if (EXTERNAL_URL.test(attr.value)) {
+      if (EXTERNAL_URL.test(attr.value) || /^\s*javascript:/i.test(attr.value)) {
         el.removeAttribute(attr.name);
       }
     }
@@ -108,11 +138,46 @@ export function sanitizeSvg(raw: string): string {
 }
 
 export function prefixSvgIds(svg: string, prefix: string): string {
-  return svg
-    .replace(/\bid="([^"]+)"/g, `id="${prefix}$1"`)
-    .replace(/\burl\(#([^)]+)\)/g, `url(#${prefix}$1)`)
-    .replace(/\bhref="#([^"]+)"/g, `href="#${prefix}$1"`)
-    .replace(/\bxlink:href="#([^"]+)"/g, `xlink:href="#${prefix}$1"`);
+  const doc = parseSvg(svg);
+  const root = doc.documentElement;
+  if (!root) return svg;
+
+  const ids = new Map<string, string>();
+  for (const el of Array.from(root.querySelectorAll("[id]"))) {
+    const current = el.getAttribute("id");
+    if (!current) continue;
+    const next = `${prefix}${current}`;
+    ids.set(current, next);
+    el.setAttribute("id", next);
+  }
+
+  const rewrite = (value: string) =>
+    value
+      .replace(/url\(#([^)]+)\)/g, (_, id: string) =>
+        ids.has(id) ? `url(#${ids.get(id)})` : `url(#${id})`,
+      )
+      .replace(/^#(.+)$/, (_, id: string) =>
+        ids.has(id) ? `#${ids.get(id)}` : `#${id}`,
+      );
+
+  for (const el of Array.from(root.querySelectorAll("*"))) {
+    for (const name of ["href", "xlink:href"]) {
+      const value = el.getAttribute(name);
+      if (value?.startsWith("#")) el.setAttribute(name, rewrite(value));
+    }
+    const nsHref = el.getAttributeNS("http://www.w3.org/1999/xlink", "href");
+    if (nsHref?.startsWith("#")) {
+      el.setAttributeNS(
+        "http://www.w3.org/1999/xlink",
+        "href",
+        rewrite(nsHref),
+      );
+    }
+    const style = el.getAttribute("style");
+    if (style?.includes("url(#")) el.setAttribute("style", rewrite(style));
+  }
+
+  return serializeSvg(doc);
 }
 
 export function ensureSvgSize(svg: string): {
@@ -126,8 +191,8 @@ export function ensureSvgSize(svg: string): {
   const vbW = viewBox && viewBox.length === 4 ? Number(viewBox[2]) : NaN;
   const vbH = viewBox && viewBox.length === 4 ? Number(viewBox[3]) : NaN;
 
-  let width = Number.parseFloat(root.getAttribute("width") ?? "");
-  let height = Number.parseFloat(root.getAttribute("height") ?? "");
+  let width = parseLength(root.getAttribute("width"));
+  let height = parseLength(root.getAttribute("height"));
 
   if (!Number.isFinite(width) || width <= 0) width = Number.isFinite(vbW) ? vbW : 800;
   if (!Number.isFinite(height) || height <= 0) height = Number.isFinite(vbH) ? vbH : 800;
