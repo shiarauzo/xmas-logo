@@ -4,6 +4,7 @@ import {
   accessoryMarkup,
 } from "./accessories";
 import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
+import { motionOffset } from "./motion";
 import { prefixSvgIds } from "./sanitize-svg";
 import type {
   AccessoryId,
@@ -121,6 +122,74 @@ export async function downloadPng(
   } finally {
     URL.revokeObjectURL(url);
   }
+}
+
+export async function downloadGif(
+  logo: LogoAsset,
+  accessoryId: AccessoryId,
+  transform: AccessoryTransform,
+  motionId: MotionId,
+) {
+  const { GIFEncoder, applyPalette, quantize } = await import("gifenc");
+  const view = exportViewBox(
+    logo.naturalWidth || 800,
+    logo.naturalHeight || 800,
+    accessoryId,
+    transform,
+  );
+  const scale = exportRasterScale(view.width, view.height);
+  const width = Math.max(1, Math.round(view.width * scale));
+  const height = Math.max(1, Math.round(view.height * scale));
+  const frames = 12;
+  const gif = GIFEncoder();
+  let palette: number[][] | undefined;
+
+  for (let i = 0; i < frames; i += 1) {
+    const mot = motionOffset(motionId, i / frames);
+    const framed = buildFrameSvg(logo, accessoryId, transform, mot);
+    const blob = new Blob([framed], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    try {
+      const image = await loadImage(url);
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Couldn’t create the image.");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      ctx.drawImage(image, 0, 0, width, height);
+      const pixels = ctx.getImageData(0, 0, width, height).data;
+      palette ??= quantize(pixels, 256);
+      const index = applyPalette(pixels, palette);
+      gif.writeFrame(index, width, height, {
+        palette,
+        delay: 80,
+        repeat: 0,
+      });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  gif.finish();
+  downloadBlob(
+    new Blob([Uint8Array.from(gif.bytes())], { type: "image/gif" }),
+    "xmastize-logo.gif",
+  );
+}
+
+function buildFrameSvg(
+  logo: LogoAsset,
+  accessoryId: AccessoryId,
+  transform: AccessoryTransform,
+  mot: ReturnType<typeof motionOffset>,
+) {
+  const raw = buildExportSvg(logo, accessoryId, transform, "jump", false);
+  return raw.replace(
+    /<g id="accessory" transform="([^"]+)">/,
+    `<g id="accessory" transform="$1 translate(0 ${(mot.dy / 100) * 48}) rotate(${mot.rot}) scale(${mot.sx} ${mot.sy})">`,
+  );
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
