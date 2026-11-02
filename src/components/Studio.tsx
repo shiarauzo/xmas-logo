@@ -7,7 +7,7 @@ import {
   MOTIONS,
   placementFor,
 } from "@/lib/accessories";
-import { downloadAnimatedSvg, downloadPng } from "@/lib/export";
+import { downloadAnimatedSvg, downloadGif, downloadPng } from "@/lib/export";
 import { logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
   AccessoryId,
@@ -16,6 +16,7 @@ import type {
   MotionId,
 } from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
+import { DownloadMenu } from "./DownloadMenu";
 import { ExampleGallery } from "./ExampleGallery";
 import { PreviewStage } from "./PreviewStage";
 
@@ -42,7 +43,10 @@ const focusRing =
 const btn =
   `inline-flex min-h-11 items-center justify-center rounded-md px-4 text-sm font-medium ${press} ${focusRing}`;
 
+type Tab = "create" | "gallery";
+
 export function Studio() {
+  const [tab, setTab] = useState<Tab>("create");
   const [logo, setLogo] = useState<LogoAsset | null>(null);
   const [accessoryId, setAccessoryId] = useState<AccessoryId>("hat");
   const [motionId, setMotionId] = useState<MotionId>("jump");
@@ -67,6 +71,17 @@ export function Studio() {
     };
   }, []);
 
+  useEffect(() => {
+    if (window.location.hash === "#gallery") setTab("gallery");
+  }, []);
+
+  useEffect(() => {
+    const next = tab === "gallery" ? "#gallery" : "#create";
+    if (window.location.hash !== next) {
+      window.history.replaceState(null, "", next);
+    }
+  }, [tab]);
+
   const openPicker = () => fileRef.current?.click();
 
   const onDragOver = (event: React.DragEvent) => {
@@ -88,6 +103,7 @@ export function Studio() {
     setLogo(next);
     setTransform(placementFor("onTop", accessoryId, next));
     setMessage("");
+    setTab("create");
   };
 
   const onUpload = async (file?: File) => {
@@ -125,16 +141,16 @@ export function Studio() {
     setPlayId((value) => value + 1);
   };
 
-  const exportSvg = () => {
+  const onDownload = async (kind: "gif" | "png" | "svg") => {
     if (!logo) return;
-    downloadAnimatedSvg(logo, accessoryId, transform, motionId);
-  };
-
-  const exportPng = async () => {
-    if (!logo) return;
+    if (kind === "svg") {
+      downloadAnimatedSvg(logo, accessoryId, transform, motionId);
+      return;
+    }
     setBusy(true);
     try {
-      await downloadPng(logo, accessoryId, transform);
+      if (kind === "png") await downloadPng(logo, accessoryId, transform);
+      else await downloadGif(logo, accessoryId, transform, motionId);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Couldn’t download.");
     } finally {
@@ -155,43 +171,36 @@ export function Studio() {
           <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Xmastize your logo
           </h1>
-          <div className="flex min-w-0 flex-col gap-2 sm:items-end">
-            <div className="flex w-full items-center gap-2 sm:w-auto">
+          <div
+            role="tablist"
+            aria-label="Studio"
+            className="flex h-11 items-center rounded-lg bg-secondary p-1"
+          >
+            {(["create", "gallery"] as const).map((id) => (
               <button
+                key={id}
                 type="button"
-                className={`${btn} flex-1 bg-primary text-primary-foreground hover:bg-primary/90 sm:flex-none`}
-                disabled={!logo || busy}
-                onClick={() => void exportPng()}
+                role="tab"
+                aria-selected={tab === id}
+                onClick={() => setTab(id)}
+                className={`inline-flex h-9 min-w-24 items-center justify-center rounded-md px-4 text-sm font-medium capitalize ${press} ${focusRing} ${
+                  tab === id
+                    ? "bg-background text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
-                Download PNG
+                {id}
               </button>
-              <button
-                type="button"
-                className={`${btn} flex-1 bg-transparent px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground sm:flex-none`}
-                disabled={!logo || busy}
-                onClick={exportSvg}
-              >
-                Download SVG
-              </button>
-            </div>
-            <p
-              className="min-h-5 text-sm text-muted-foreground sm:text-right"
-              role="status"
-            >
-              {message}
-            </p>
+            ))}
           </div>
-        </header>
-
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-          <aside className="min-w-0 rounded-xl border border-border bg-card p-4 text-card-foreground">
+          <div className="flex items-center justify-end gap-2">
             <input
               ref={fileRef}
               type="file"
               accept="image/svg+xml,image/png,image/jpeg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
               className="sr-only"
               tabIndex={-1}
-              aria-label="Upload logo"
+              aria-label="Upload"
               onChange={(event) => {
                 void onUpload(event.target.files?.[0]);
                 event.currentTarget.value = "";
@@ -199,115 +208,126 @@ export function Studio() {
             />
             <button
               type="button"
-              className={`${btn} w-full border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
+              aria-label="Upload"
               onClick={openPicker}
+              className={`inline-flex size-11 items-center justify-center rounded-md border border-border bg-background hover:bg-accent hover:text-accent-foreground ${press} ${focusRing}`}
             >
-              Upload logo
+              <UploadIcon />
             </button>
-
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
-              {ACCESSORIES.map((item) => {
-                const selected = item.id === accessoryId;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => chooseAccessory(item.id)}
-                    className={`flex min-h-11 flex-col items-center justify-between rounded-lg border px-2 py-2 text-sm font-medium ${press} ${focusRing} ${
-                      selected
-                        ? "border-foreground bg-secondary text-foreground"
-                        : "border-border bg-background text-muted-foreground"
-                    }`}
-                  >
-                    <AccessoryArt
-                      id={item.id}
-                      prefix={`pick-${item.id}-`}
-                      className="h-14 w-16"
-                    />
-                    <span>{item.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {MOTIONS.map((motion) => {
-                const selected = motion.id === motionId;
-                return (
-                  <button
-                    key={motion.id}
-                    type="button"
-                    aria-pressed={selected}
-                    disabled={reducedMotion}
-                    onClick={() => chooseMotion(motion.id)}
-                    className={`${btn} ${
-                      selected
-                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                        : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
-                    }`}
-                  >
-                    {motion.name}
-                  </button>
-                );
-              })}
-            </div>
-            {reducedMotion ? (
-              <p className="mt-3 text-sm text-muted-foreground">
-                Animation paused.
-              </p>
-            ) : null}
-          </aside>
-
-          <div className="aspect-square w-full max-h-[70vh] overflow-visible">
-            {logo ? (
-              <PreviewStage
-                logo={logo}
-                accessoryId={accessoryId}
-                motionId={motionId}
-                transform={transform}
-                onChange={setTransform}
-                playId={playId}
-                reducedMotion={reducedMotion}
-              />
-            ) : (
-              <button
-                type="button"
-                onClick={openPicker}
-                onDragOver={onDragOver}
-                onDragLeave={onDragLeave}
-                onDrop={onDrop}
-                disabled={busy}
-                className={`flex h-full min-h-[240px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed ${press} ${focusRing} ${
-                  dragging
-                    ? "border-foreground bg-accent"
-                    : "border-muted-foreground/25 bg-muted/30"
-                }`}
-              >
-                <span className="flex size-11 items-center justify-center rounded-lg bg-secondary text-muted-foreground">
-                  <svg
-                    viewBox="0 0 24 24"
-                    className="size-5"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M12 5v14M5 12h14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {dragging ? "Drop" : "Upload a logo"}
-                </span>
-              </button>
-            )}
+            <DownloadMenu disabled={!logo || busy} onPick={(kind) => void onDownload(kind)} />
           </div>
-        </div>
-        <ExampleGallery />
+        </header>
+        {message ? (
+          <p className="text-sm text-muted-foreground" role="status">
+            {message}
+          </p>
+        ) : null}
+
+        {tab === "gallery" ? (
+          <ExampleGallery />
+        ) : (
+          <div className="grid min-h-[22rem] items-stretch gap-4 lg:h-[min(70vh,36rem)] lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
+            <aside className="flex h-full min-h-[22rem] flex-col rounded-xl border border-border bg-card p-4 text-card-foreground">
+              <div className="grid grid-cols-2 gap-2">
+                {ACCESSORIES.map((item) => {
+                  const selected = item.id === accessoryId;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => chooseAccessory(item.id)}
+                      className={`flex min-h-11 flex-col items-center justify-between rounded-lg border px-2 py-2 text-sm font-medium ${press} ${focusRing} ${
+                        selected
+                          ? "border-foreground bg-secondary text-foreground"
+                          : "border-border bg-background text-muted-foreground"
+                      }`}
+                    >
+                      <AccessoryArt
+                        id={item.id}
+                        prefix={`pick-${item.id}-`}
+                        className="h-14 w-16"
+                      />
+                      <span>{item.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {MOTIONS.map((motion) => {
+                  const selected = motion.id === motionId;
+                  return (
+                    <button
+                      key={motion.id}
+                      type="button"
+                      aria-pressed={selected}
+                      disabled={reducedMotion}
+                      onClick={() => chooseMotion(motion.id)}
+                      className={`${btn} ${
+                        selected
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                          : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
+                      }`}
+                    >
+                      {motion.name}
+                    </button>
+                  );
+                })}
+              </div>
+              {reducedMotion ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Animation paused.
+                </p>
+              ) : null}
+            </aside>
+
+            <div className="h-full min-h-[22rem]">
+              {logo ? (
+                <PreviewStage
+                  logo={logo}
+                  accessoryId={accessoryId}
+                  motionId={motionId}
+                  transform={transform}
+                  onChange={setTransform}
+                  playId={playId}
+                  reducedMotion={reducedMotion}
+                />
+              ) : (
+                <button
+                  type="button"
+                  aria-label="Upload"
+                  onClick={openPicker}
+                  onDragOver={onDragOver}
+                  onDragLeave={onDragLeave}
+                  onDrop={onDrop}
+                  disabled={busy}
+                  className={`h-full min-h-[22rem] w-full rounded-xl border border-dashed ${press} ${focusRing} ${
+                    dragging
+                      ? "border-foreground bg-accent"
+                      : "border-border bg-muted/20"
+                  }`}
+                />
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function UploadIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+      <path
+        d="M12 20V8M7 12l5-5 5 5M5 4h14"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
