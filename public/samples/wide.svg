@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 160" width="900" height="160" fill="none">
+  <title>Bruma Atelier</title>
+  <rect width="900" height="160" fill="#1f3d2b"/>
+  <g fill="none" stroke="#f6eee4" stroke-width="12" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 48 V112 L88 48 V112"/>
+    <path d="M118 48 V112"/>
+    <path d="M146 112 V48 H186"/>
+    <path d="M214 48 V112"/>
+    <path d="M242 48 V112 H290"/>
+    <path d="M360 48 H420 M390 48 V112"/>
+    <path d="M450 112 V48 H502"/>
+    <path d="M530 48 V112"/>
+    <path d="M560 48 V112 H616"/>
+    <path d="M644 112 V48 H696"/>
+    <path d="M724 48 V112"/>
+    <circle cx="800" cy="80" r="36"/>
+    <path d="M848 48 V112"/>
+  </g>
+</svg>

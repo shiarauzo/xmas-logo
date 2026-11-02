@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240" fill="none">
+  <title>Marca transparente</title>
+  <circle cx="120" cy="120" r="88" stroke="#c43b3b" stroke-width="14"/>
+  <path d="M72 150 C88 96 152 96 168 150" fill="none" stroke="#1f3d2b" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="96" cy="108" r="10" fill="#1f3d2b"/>
+  <circle cx="144" cy="108" r="10" fill="#1f3d2b"/>
+  <path d="M120 54 L132 86 H88 L120 54 Z" fill="#d4a054"/>
+</svg>

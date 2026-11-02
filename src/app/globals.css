@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f6eee4;
+  --foreground: #2a1c16;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cream: #f6eee4;
+  --color-snow: #fff8f0;
+  --color-ink: #2a1c16;
+  --color-pine: #1f3d2b;
+  --color-moss: #2f6a45;
+  --color-berry: #c43b3b;
+  --color-gold: #d4a054;
+  --color-cedar: #6b3e2e;
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fredoka), var(--font-nunito), ui-sans-serif, sans-serif;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100%;
+}
+
+.bg-checker {
+  background-color: #f3e6d6;
+  background-image:
+    linear-gradient(45deg, #e8d5be 25%, transparent 25%),
+    linear-gradient(-45deg, #e8d5be 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e8d5be 75%),
+    linear-gradient(-45deg, transparent 75%, #e8d5be 75%);
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+  background-size: 20px 20px;
+}
+
+.snow-field {
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 248, 240, 0.9), transparent 22%),
+    radial-gradient(circle at 86% 12%, rgba(212, 160, 84, 0.18), transparent 26%),
+    radial-gradient(circle at 70% 80%, rgba(196, 59, 59, 0.08), transparent 28%),
+    linear-gradient(180deg, #fbf3e9 0%, #f6eee4 40%, #efe0cf 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xmas-motion,
+  .xmas-motion * {
+    animation: none !important;
+  }
+}

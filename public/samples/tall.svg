@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 720" width="180" height="720" fill="none">
+  <title>Pino</title>
+  <rect width="180" height="720" fill="#f6eee4"/>
+  <path d="M90 36 L150 170 H30 Z" fill="#2f6a45"/>
+  <path d="M90 110 L156 270 H24 Z" fill="#1f3d2b"/>
+  <path d="M90 210 L160 380 H20 Z" fill="#2f6a45"/>
+  <rect x="80" y="370" width="20" height="70" rx="4" fill="#6b3e2e"/>
+  <g fill="none" stroke="#1f3d2b" stroke-width="14" stroke-linecap="round">
+    <path d="M46 500 V620 L134 500 V620"/>
+    <path d="M58 660 V700 H122"/>
+    <path d="M46 700 V660 H90 V700"/>
+    <circle cx="128" cy="680" r="20"/>
+  </g>
+</svg>
