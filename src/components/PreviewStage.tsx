@@ -214,7 +214,7 @@ export function PreviewStage({
   return (
     <div
       ref={frameRef}
-      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-visible bg-checker"
+      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-visible rounded-xl border border-border bg-checker"
       style={{
         paddingTop: `${insets.top * 100}%`,
         paddingRight: `${insets.right * 100}%`,
@@ -249,7 +249,7 @@ export function PreviewStage({
           role="button"
           tabIndex={0}
           aria-label="Mover adorno"
-          className="absolute touch-none select-none cursor-grab rounded-xl outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold active:cursor-grabbing"
+          className="absolute cursor-grab touch-none select-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:cursor-grabbing"
           style={{
             left: `${transform.x}%`,
             top: `${transform.y}%`,

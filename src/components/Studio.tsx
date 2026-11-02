@@ -74,8 +74,14 @@ async function firstLetterTransform(
   }
 }
 
+const press =
+  "select-none transition-[transform,background-color,color,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50";
+
 const focusRing =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold";
+  "outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
+
+const btn =
+  `inline-flex min-h-11 items-center justify-center rounded-md px-4 text-sm font-medium ${press} ${focusRing}`;
 
 export function Studio() {
   const [logo, setLogo] = useState<LogoAsset | null>(null);
@@ -198,19 +204,18 @@ export function Studio() {
   );
 
   return (
-    <div className="relative isolate min-h-full overflow-x-hidden px-3 pb-8 pt-5 sm:px-6 lg:px-8">
+    <div className="relative isolate min-h-dvh overflow-x-hidden px-3 pt-[max(1.25rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 lg:px-8">
       <style dangerouslySetInnerHTML={motionStyle} />
-      <div className="pointer-events-none fixed inset-0 -z-10 snow-field" />
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="min-w-0 font-display text-[2rem] leading-none text-pine sm:text-4xl">
+          <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
             Gorrito navideño
           </h1>
           <div className="flex min-w-0 flex-col gap-2 sm:items-end">
             <div className="flex w-full items-center gap-2 sm:w-auto">
               <button
                 type="button"
-                className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-full bg-pine px-4 text-sm font-bold text-snow disabled:opacity-50 sm:flex-none ${focusRing}`}
+                className={`${btn} flex-1 bg-primary text-primary-foreground hover:bg-primary/90 sm:flex-none`}
                 disabled={!logo || busy}
                 onClick={() => void exportPng()}
               >
@@ -218,14 +223,17 @@ export function Studio() {
               </button>
               <button
                 type="button"
-                className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-full px-3 text-sm font-semibold text-cedar disabled:opacity-50 sm:flex-none ${focusRing}`}
+                className={`${btn} flex-1 bg-transparent px-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground sm:flex-none`}
                 disabled={!logo || busy}
                 onClick={exportSvg}
               >
                 Bajar SVG
               </button>
             </div>
-            <p className="min-h-5 text-sm text-cedar sm:text-right" role="status">
+            <p
+              className="min-h-5 text-sm text-muted-foreground sm:text-right"
+              role="status"
+            >
               {message}
             </p>
           </div>
@@ -244,13 +252,13 @@ export function Studio() {
                 reducedMotion={reducedMotion}
               />
             ) : (
-              <div className="flex h-full items-center justify-center bg-checker text-sm text-cedar">
+              <div className="flex h-full items-center justify-center rounded-xl border border-border bg-checker text-sm text-muted-foreground">
                 Cargando…
               </div>
             )}
           </div>
 
-          <aside className="min-w-0 rounded-[1.6rem] bg-snow p-4 shadow-[0_12px_36px_rgba(79,42,24,0.06)]">
+          <aside className="min-w-0 rounded-xl border border-border bg-card p-4 text-card-foreground">
             <input
               ref={fileRef}
               type="file"
@@ -266,14 +274,14 @@ export function Studio() {
             <div className="flex gap-2">
               <button
                 type="button"
-                className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pine/20 bg-cream px-4 text-sm font-bold text-pine ${focusRing}`}
+                className={`${btn} flex-1 border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
                 onClick={() => fileRef.current?.click()}
               >
                 Subir logo
               </button>
               <button
                 type="button"
-                className={`inline-flex min-h-11 flex-1 items-center justify-center rounded-full border border-pine/20 bg-cream px-4 text-sm font-bold text-pine ${focusRing}`}
+                className={`${btn} flex-1 border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
                 onClick={async () => {
                   try {
                     await replaceLogo(await loadSampleLogo());
@@ -297,10 +305,10 @@ export function Studio() {
                     type="button"
                     aria-pressed={selected}
                     onClick={() => void chooseAccessory(item.id)}
-                    className={`flex min-h-11 flex-col items-center justify-between rounded-2xl border px-2 py-2 text-sm font-bold ${focusRing} ${
+                    className={`flex min-h-11 flex-col items-center justify-between rounded-lg border px-2 py-2 text-sm font-medium ${press} ${focusRing} ${
                       selected
-                        ? "border-berry bg-cream text-berry"
-                        : "border-pine/10 bg-cream/40 text-pine"
+                        ? "border-foreground bg-secondary text-foreground"
+                        : "border-border bg-background text-muted-foreground"
                     }`}
                   >
                     <AccessoryArt
@@ -318,10 +326,10 @@ export function Studio() {
               <button
                 type="button"
                 aria-pressed={preset === "onTop"}
-                className={`min-h-11 rounded-full px-3 text-sm font-bold ${focusRing} ${
+                className={`${btn} ${
                   preset === "onTop"
-                    ? "bg-berry text-snow"
-                    : "border border-pine/20 bg-cream text-pine"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
                 }`}
                 onClick={() => void applyPreset("onTop")}
               >
@@ -330,17 +338,17 @@ export function Studio() {
               <button
                 type="button"
                 aria-pressed={preset === "onLetter"}
-                className={`min-h-11 rounded-full px-3 text-sm font-bold ${focusRing} ${
+                className={`${btn} ${
                   preset === "onLetter"
-                    ? "bg-berry text-snow"
-                    : "border border-pine/20 bg-cream text-pine"
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                    : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
                 }`}
                 onClick={() => void applyPreset("onLetter")}
               >
                 En una letra
               </button>
             </div>
-            <label className="mt-4 block text-sm font-semibold text-pine">
+            <label className="mt-4 block text-sm font-medium text-foreground">
               Tamaño
               <input
                 type="range"
@@ -354,10 +362,10 @@ export function Studio() {
                     scale: Number(event.target.value),
                   }))
                 }
-                className="mt-2 w-full accent-berry"
+                className="mt-2 w-full accent-primary"
               />
             </label>
-            <label className="mt-3 block text-sm font-semibold text-pine">
+            <label className="mt-3 block text-sm font-medium text-foreground">
               Giro
               <input
                 type="range"
@@ -371,11 +379,13 @@ export function Studio() {
                     rotation: Number(event.target.value),
                   }))
                 }
-                className="mt-2 w-full accent-berry"
+                className="mt-2 w-full accent-primary"
               />
             </label>
             {reducedMotion ? (
-              <p className="mt-3 text-sm text-cedar">Animación en pausa.</p>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Animación en pausa.
+              </p>
             ) : null}
           </aside>
         </div>
