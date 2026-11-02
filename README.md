@@ -1,41 +1,41 @@
-# Gorrito navideño
+# Xmastize your logo
 
-Web app chiquita y de código abierto: sube tu logo y ponle un adorno navideño animado. Un gorro, una barba, un bastón o un gorro de duende. Lo colocas a mano, lo ves moverse y te lo bajas.
+A small open-source web app: upload your logo, drop a Christmas accessory on it, watch it move, download it.
 
-Todo corre en el navegador. No hay servidor de subida ni cuentas.
+It all runs in the browser. No upload server, no accounts.
 
-## Qué puedes hacer
+## What you can do
 
-- Subir un SVG, PNG, JPG o WebP
-- Elegir un adorno
-- Arrastrarlo, cambiar el tamaño y girarlo (también con el dedo)
-- Usar atajos: encima del logo o en una letra
-- Bajar un SVG animado o un PNG quieto
+- Upload an SVG, PNG, JPG, or WebP
+- Pick an accessory
+- Drag, resize, and rotate it on the logo
+- Pick a motion: jump, spin, sway, bounce
+- Download an animated SVG or a still PNG
 
-Los SVG se limpian con DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`) y además se quitan scripts, `foreignObject`, `use` externos y referencias `href` / `xlink:href` hacia otras páginas o archivos. En pantalla el logo se ve como `<img>` desde un blob local, no se inyecta en crudo.
+SVGs are cleaned with DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`). Scripts, `foreignObject`, external `use`, and `href` / `xlink:href` pointing at other pages or files are stripped. On screen the logo is an `<img>` from a local blob, never injected raw.
 
-La animación se detiene si el sistema pide menos movimiento (`prefers-reduced-motion`).
+Motion stops if the system asks for less movement (`prefers-reduced-motion`).
 
-## Cómo correrla
+## Run it
 
-Necesitas Node 20 o más nuevo.
+Node 20 or newer.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abre [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
 npm test
 npm run build
 ```
 
-## Publicar en Vercel
+## Publish on Vercel
 
-Importa este repositorio en Vercel. El marco es Next.js, no hace falta config extra. El comando de build es `npm run build` y la carpeta de salida la resuelve Vercel sola.
+Import this repo in Vercel. The framework is Next.js. Build command is `npm run build`. Vercel picks the output folder.
 
-## Licencia
+## License
 
-MIT. Ver `LICENSE`.
+MIT. See `LICENSE`.

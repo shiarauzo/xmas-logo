@@ -2,6 +2,8 @@ export type AccessoryId = "hat" | "beard" | "cane" | "elf";
 
 export type PlacementPreset = "onTop" | "onLetter";
 
+export type MotionId = "jump" | "spin" | "sway" | "bounce";
+
 export type AccessoryTransform = {
   x: number;
   y: number;
