@@ -1,5 +1,10 @@
 import { ACCESSORY_BASE_SIZE, ACCESSORY_VIEWBOX } from "./constants.ts";
-import type { AccessoryId, AccessoryTransform, PlacementPreset } from "./types";
+import type {
+  AccessoryId,
+  AccessoryTransform,
+  MotionId,
+  PlacementPreset,
+} from "./types";
 
 export type AccessoryMeta = {
   id: AccessoryId;
@@ -10,39 +15,51 @@ export type AccessoryMeta = {
   animation: string;
 };
 
+export type MotionMeta = {
+  id: MotionId;
+  name: string;
+};
+
 export const ACCESSORIES: AccessoryMeta[] = [
   {
     id: "hat",
-    name: "Gorro",
-    hint: "Gorro de Navidad",
+    name: "Hat",
+    hint: "Santa hat",
     viewBox: ACCESSORY_VIEWBOX.hat,
     origin: "50% 86%",
     animation: "xmas-hat",
   },
   {
     id: "beard",
-    name: "Barba",
-    hint: "Barba navideña",
+    name: "Beard",
+    hint: "Santa beard",
     viewBox: ACCESSORY_VIEWBOX.beard,
     origin: "50% 18%",
     animation: "xmas-beard",
   },
   {
     id: "cane",
-    name: "Bastón",
-    hint: "Bastón de Navidad",
+    name: "Cane",
+    hint: "Candy cane",
     viewBox: ACCESSORY_VIEWBOX.cane,
     origin: "50% 92%",
     animation: "xmas-cane",
   },
   {
     id: "elf",
-    name: "Duende",
-    hint: "Gorro de duende",
+    name: "Elf",
+    hint: "Elf hat",
     viewBox: ACCESSORY_VIEWBOX.elf,
     origin: "50% 88%",
     animation: "xmas-elf",
   },
+];
+
+export const MOTIONS: MotionMeta[] = [
+  { id: "jump", name: "Jump" },
+  { id: "spin", name: "Spin" },
+  { id: "sway", name: "Sway" },
+  { id: "bounce", name: "Bounce" },
 ];
 
 export const ACCESSORY_BY_ID = Object.fromEntries(
@@ -235,20 +252,48 @@ function elfHatMarkup(p: string): string {
 
 export const ACCESSORY_MOTION_CSS = `
 @keyframes xmas-jump {
-  0% { transform: translate(0, 0) rotate(0deg); }
-  14% { transform: translate(0, 6px) rotate(-10deg) scaleY(.92); }
-  42% { transform: translate(0, -28px) rotate(210deg); }
-  62% { transform: translate(0, -6px) rotate(340deg); }
-  78% { transform: translate(0, 3px) rotate(360deg) scaleY(.96); }
-  100% { transform: translate(0, 0) rotate(360deg); }
+  0%, 100% { transform: translate(0, 0); }
+  40% { transform: translate(0, -22%); }
+}
+@keyframes xmas-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes xmas-sway {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+  80% { transform: rotate(-6deg); }
+}
+@keyframes xmas-bounce {
+  0%, 100% { transform: translate(0, 0) scale(1, 1); }
+  35% { transform: translate(0, -14%) scale(.97, 1.05); }
+  55% { transform: translate(0, 0) scale(1.06, .9); }
 }
 .xmas-motion {
-  animation-name: xmas-jump;
-  animation-duration: .95s;
-  animation-timing-function: cubic-bezier(.2, .7, .2, 1);
-  animation-iteration-count: 1;
-  animation-fill-mode: forwards;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
   transform-box: fill-box;
+}
+.xmas-jump {
+  animation-name: xmas-jump;
+  animation-duration: .85s;
+  animation-timing-function: cubic-bezier(.23, 1, .32, 1);
+}
+.xmas-spin {
+  animation-name: xmas-spin;
+  animation-duration: 1.1s;
+  animation-timing-function: linear;
+}
+.xmas-sway {
+  animation-name: xmas-sway;
+  animation-duration: .7s;
+  animation-timing-function: cubic-bezier(.77, 0, .175, 1);
+}
+.xmas-bounce {
+  animation-name: xmas-bounce;
+  animation-duration: .8s;
+  animation-timing-function: cubic-bezier(.23, 1, .32, 1);
 }
 .xmas-hat { transform-origin: 50% 86%; }
 .xmas-beard { transform-origin: 50% 18%; }

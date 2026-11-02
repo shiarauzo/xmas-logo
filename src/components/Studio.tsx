@@ -1,20 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ACCESSORIES, ACCESSORY_MOTION_CSS, placementFor } from "@/lib/accessories";
-import { downloadAnimatedSvg, downloadPng } from "@/lib/export";
 import {
-  bandToPercents,
-  firstLetterTapX,
-  scanLetterFromImageData,
-  sitOnLetter,
-} from "@/lib/letter";
+  ACCESSORIES,
+  ACCESSORY_MOTION_CSS,
+  MOTIONS,
+  placementFor,
+} from "@/lib/accessories";
+import { downloadAnimatedSvg, downloadPng } from "@/lib/export";
 import { logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
   AccessoryId,
   AccessoryTransform,
   LogoAsset,
-  PlacementPreset,
+  MotionId,
 } from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
 import { PreviewStage } from "./PreviewStage";
@@ -33,47 +32,6 @@ function useReducedMotion() {
   return reduced;
 }
 
-async function firstLetterTransform(
-  logo: LogoAsset,
-  accessoryId: AccessoryId,
-): Promise<AccessoryTransform> {
-  try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const el = new Image();
-      el.onload = () => resolve(el);
-      el.onerror = () => reject(new Error("logo"));
-      el.src = logo.objectUrl;
-    });
-    const canvas = document.createElement("canvas");
-    canvas.width = image.naturalWidth;
-    canvas.height = image.naturalHeight;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return placementFor("onLetter", accessoryId, logo);
-    ctx.drawImage(image, 0, 0);
-    const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const tapX = firstLetterTapX(canvas.width, (x) => {
-      for (let y = 0; y < canvas.height; y += 1) {
-        if (pixels.data[(y * canvas.width + x) * 4 + 3] > 24) return true;
-      }
-      return false;
-    });
-    const band = scanLetterFromImageData(
-      pixels.data,
-      canvas.width,
-      canvas.height,
-      tapX,
-    );
-    if (!band) return placementFor("onLetter", accessoryId, logo);
-    return sitOnLetter(
-      accessoryId,
-      logo,
-      bandToPercents(band, canvas.width, canvas.height),
-    );
-  } catch {
-    return placementFor("onLetter", accessoryId, logo);
-  }
-}
-
 const press =
   "select-none transition-[transform,background-color,color,opacity] duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] active:scale-[0.97] disabled:pointer-events-none disabled:opacity-50";
 
@@ -86,7 +44,7 @@ const btn =
 export function Studio() {
   const [logo, setLogo] = useState<LogoAsset | null>(null);
   const [accessoryId, setAccessoryId] = useState<AccessoryId>("hat");
-  const [preset, setPreset] = useState<PlacementPreset>("onTop");
+  const [motionId, setMotionId] = useState<MotionId>("jump");
   const [transform, setTransform] = useState<AccessoryTransform>({
     x: 50,
     y: -20,
@@ -123,15 +81,11 @@ export function Studio() {
     void onUpload(event.dataTransfer.files[0]);
   };
 
-  const replaceLogo = async (next: LogoAsset) => {
+  const replaceLogo = (next: LogoAsset) => {
     releaseLogo(logoRef.current);
     logoRef.current = next;
     setLogo(next);
-    if (preset === "onLetter") {
-      setTransform(await firstLetterTransform(next, accessoryId));
-    } else {
-      setTransform(placementFor(preset, accessoryId, next));
-    }
+    setTransform(placementFor("onTop", accessoryId, next));
     setMessage("");
   };
 
@@ -139,52 +93,40 @@ export function Studio() {
     if (!file) return;
     const gen = (uploadGen.current += 1);
     setBusy(true);
-    setMessage("Leyendo…");
+    setMessage("Reading…");
     try {
       const next = await logoFromFile(file);
       if (gen !== uploadGen.current) {
         releaseLogo(next);
         return;
       }
-      await replaceLogo(next);
+      replaceLogo(next);
     } catch (error) {
       if (gen !== uploadGen.current) return;
-      setMessage(error instanceof Error ? error.message : "No se pudo abrir.");
+      setMessage(error instanceof Error ? error.message : "Couldn’t open.");
     } finally {
       if (gen === uploadGen.current) setBusy(false);
     }
   };
 
-  const applyPreset = async (nextPreset: PlacementPreset) => {
-    if (!logo) return;
-    setPreset(nextPreset);
-    if (nextPreset === "onLetter") {
-      setTransform(await firstLetterTransform(logo, accessoryId));
-    } else {
-      setTransform(placementFor(nextPreset, accessoryId, logo));
-    }
-    setMessage(nextPreset === "onLetter" ? "Toca una letra." : "");
-  };
-
-  const chooseAccessory = async (id: AccessoryId) => {
+  const chooseAccessory = (id: AccessoryId) => {
     if (id === accessoryId) {
       setPlayId((value) => value + 1);
       return;
     }
     setAccessoryId(id);
-    if (logo) {
-      if (preset === "onLetter") {
-        setTransform(await firstLetterTransform(logo, id));
-      } else {
-        setTransform(placementFor(preset, id, logo));
-      }
-    }
+    if (logo) setTransform(placementFor("onTop", id, logo));
+    setPlayId((value) => value + 1);
+  };
+
+  const chooseMotion = (id: MotionId) => {
+    setMotionId(id);
     setPlayId((value) => value + 1);
   };
 
   const exportSvg = () => {
     if (!logo) return;
-    downloadAnimatedSvg(logo, accessoryId, transform);
+    downloadAnimatedSvg(logo, accessoryId, transform, motionId);
   };
 
   const exportPng = async () => {
@@ -193,7 +135,7 @@ export function Studio() {
     try {
       await downloadPng(logo, accessoryId, transform);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "No se pudo bajar.");
+      setMessage(error instanceof Error ? error.message : "Couldn’t download.");
     } finally {
       setBusy(false);
     }
@@ -210,7 +152,7 @@ export function Studio() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Gorrito navideño
+            Xmastize your logo
           </h1>
           <div className="flex min-w-0 flex-col gap-2 sm:items-end">
             <div className="flex w-full items-center gap-2 sm:w-auto">
@@ -220,7 +162,7 @@ export function Studio() {
                 disabled={!logo || busy}
                 onClick={() => void exportPng()}
               >
-                Bajar PNG
+                Download PNG
               </button>
               <button
                 type="button"
@@ -228,7 +170,7 @@ export function Studio() {
                 disabled={!logo || busy}
                 onClick={exportSvg}
               >
-                Bajar SVG
+                Download SVG
               </button>
             </div>
             <p
@@ -240,13 +182,88 @@ export function Studio() {
           </div>
         </header>
 
-        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <aside className="min-w-0 rounded-xl border border-border bg-card p-4 text-card-foreground">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/svg+xml,image/png,image/jpeg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
+              className="sr-only"
+              tabIndex={-1}
+              aria-label="Upload logo"
+              onChange={(event) => {
+                void onUpload(event.target.files?.[0]);
+                event.currentTarget.value = "";
+              }}
+            />
+            <button
+              type="button"
+              className={`${btn} w-full border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
+              onClick={openPicker}
+            >
+              Upload logo
+            </button>
+
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
+              {ACCESSORIES.map((item) => {
+                const selected = item.id === accessoryId;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => chooseAccessory(item.id)}
+                    className={`flex min-h-11 flex-col items-center justify-between rounded-lg border px-2 py-2 text-sm font-medium ${press} ${focusRing} ${
+                      selected
+                        ? "border-foreground bg-secondary text-foreground"
+                        : "border-border bg-background text-muted-foreground"
+                    }`}
+                  >
+                    <AccessoryArt
+                      id={item.id}
+                      prefix={`pick-${item.id}-`}
+                      className="h-14 w-16"
+                    />
+                    <span>{item.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {MOTIONS.map((motion) => {
+                const selected = motion.id === motionId;
+                return (
+                  <button
+                    key={motion.id}
+                    type="button"
+                    aria-pressed={selected}
+                    disabled={reducedMotion}
+                    onClick={() => chooseMotion(motion.id)}
+                    className={`${btn} ${
+                      selected
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
+                    }`}
+                  >
+                    {motion.name}
+                  </button>
+                );
+              })}
+            </div>
+            {reducedMotion ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                Animation paused.
+              </p>
+            ) : null}
+          </aside>
+
           <div className="aspect-square w-full max-h-[70vh] overflow-visible">
             {logo ? (
               <PreviewStage
                 logo={logo}
                 accessoryId={accessoryId}
-                preset={preset}
+                motionId={motionId}
                 transform={transform}
                 onChange={setTransform}
                 playId={playId}
@@ -282,129 +299,11 @@ export function Studio() {
                   </svg>
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  {dragging ? "Suelta" : "Sube un logo"}
+                  {dragging ? "Drop" : "Upload a logo"}
                 </span>
               </button>
             )}
           </div>
-
-          <aside className="min-w-0 rounded-xl border border-border bg-card p-4 text-card-foreground">
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/svg+xml,image/png,image/jpeg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
-              className="sr-only"
-              tabIndex={-1}
-              aria-label="Subir logo"
-              onChange={(event) => {
-                void onUpload(event.target.files?.[0]);
-                event.currentTarget.value = "";
-              }}
-            />
-            <button
-              type="button"
-              className={`${btn} w-full border border-border bg-background hover:bg-accent hover:text-accent-foreground`}
-              onClick={openPicker}
-            >
-              Subir logo
-            </button>
-
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2">
-              {ACCESSORIES.map((item) => {
-                const selected = item.id === accessoryId;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => void chooseAccessory(item.id)}
-                    className={`flex min-h-11 flex-col items-center justify-between rounded-lg border px-2 py-2 text-sm font-medium ${press} ${focusRing} ${
-                      selected
-                        ? "border-foreground bg-secondary text-foreground"
-                        : "border-border bg-background text-muted-foreground"
-                    }`}
-                  >
-                    <AccessoryArt
-                      id={item.id}
-                      prefix={`pick-${item.id}-`}
-                      className="h-14 w-16"
-                    />
-                    <span>{item.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                aria-pressed={preset === "onTop"}
-                disabled={!logo}
-                className={`${btn} ${
-                  preset === "onTop"
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
-                }`}
-                onClick={() => void applyPreset("onTop")}
-              >
-                Encima
-              </button>
-              <button
-                type="button"
-                aria-pressed={preset === "onLetter"}
-                disabled={!logo}
-                className={`${btn} ${
-                  preset === "onLetter"
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "border border-border bg-background hover:bg-accent hover:text-accent-foreground"
-                }`}
-                onClick={() => void applyPreset("onLetter")}
-              >
-                En una letra
-              </button>
-            </div>
-            <label className={`mt-4 block text-sm font-medium text-foreground ${logo ? "" : "opacity-50"}`}>
-              Tamaño
-              <input
-                type="range"
-                min="0.22"
-                max="2.4"
-                step="0.01"
-                value={transform.scale}
-                disabled={!logo}
-                onChange={(event) =>
-                  setTransform((current) => ({
-                    ...current,
-                    scale: Number(event.target.value),
-                  }))
-                }
-                className="mt-2 w-full accent-primary"
-              />
-            </label>
-            <label className={`mt-3 block text-sm font-medium text-foreground ${logo ? "" : "opacity-50"}`}>
-              Giro
-              <input
-                type="range"
-                min="-180"
-                max="180"
-                step="1"
-                value={transform.rotation}
-                disabled={!logo}
-                onChange={(event) =>
-                  setTransform((current) => ({
-                    ...current,
-                    rotation: Number(event.target.value),
-                  }))
-                }
-                className="mt-2 w-full accent-primary"
-              />
-            </label>
-            {reducedMotion ? (
-              <p className="mt-3 text-sm text-muted-foreground">
-                Animación en pausa.
-              </p>
-            ) : null}
-          </aside>
         </div>
       </div>
     </div>

@@ -3,36 +3,43 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ACCESSORY_BASE_SIZE, ACCESSORY_BY_ID } from "@/lib/accessories";
 import { clamp, stageInsets } from "@/lib/geometry";
-import { bandToPercents, scanLetterFromImageData, sitOnLetter } from "@/lib/letter";
 import type {
   AccessoryId,
   AccessoryTransform,
   LogoAsset,
-  PlacementPreset,
+  MotionId,
 } from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
 
 type PreviewStageProps = {
   logo: LogoAsset;
   accessoryId: AccessoryId;
-  preset: PlacementPreset;
+  motionId: MotionId;
   transform: AccessoryTransform;
   onChange: (next: AccessoryTransform) => void;
   playId: number;
   reducedMotion: boolean;
 };
 
+type PointerMode = "move" | "scale" | "rotate";
+
 type PointerSession = {
   pointerId: number;
+  mode: PointerMode;
   startX: number;
   startY: number;
   start: AccessoryTransform;
+  originX: number;
+  originY: number;
 };
+
+const handle =
+  "absolute z-[3] size-5 rounded-full border-2 border-background bg-primary shadow-sm";
 
 export function PreviewStage({
   logo,
   accessoryId,
-  preset,
+  motionId,
   transform,
   onChange,
   playId,
@@ -40,6 +47,7 @@ export function PreviewStage({
 }: PreviewStageProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
+  const accessoryRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const sessionRef = useRef<PointerSession | null>(null);
   const [box, setBox] = useState({ x: 0, y: 0, w: 0, h: 0 });
@@ -94,6 +102,38 @@ export function PreviewStage({
     const session = sessionRef.current;
     const layer = layerRef.current;
     if (!session || !layer) return;
+    if (session.mode === "scale") {
+      const startDist = Math.hypot(
+        session.startX - session.originX,
+        session.startY - session.originY,
+      );
+      const dist = Math.hypot(
+        event.clientX - session.originX,
+        event.clientY - session.originY,
+      );
+      if (startDist < 1) return;
+      onChangeRef.current({
+        ...session.start,
+        scale: clamp(session.start.scale * (dist / startDist), 0.22, 2.4),
+      });
+      return;
+    }
+    if (session.mode === "rotate") {
+      const startAngle = Math.atan2(
+        session.startY - session.originY,
+        session.startX - session.originX,
+      );
+      const angle = Math.atan2(
+        event.clientY - session.originY,
+        event.clientX - session.originX,
+      );
+      const deg = ((angle - startAngle) * 180) / Math.PI;
+      onChangeRef.current({
+        ...session.start,
+        rotation: Math.round(session.start.rotation + deg),
+      });
+      return;
+    }
     const rect = layer.getBoundingClientRect();
     if (rect.width < 1 || rect.height < 1) return;
     const dx = ((event.clientX - session.startX) / rect.width) * 100;
@@ -114,84 +154,26 @@ export function PreviewStage({
     window.removeEventListener("pointercancel", endPointer);
   }
 
-  const beginDrag = (event: React.PointerEvent) => {
+  const beginSession = (
+    event: React.PointerEvent,
+    mode: PointerMode,
+  ) => {
     event.preventDefault();
     event.stopPropagation();
+    const boxRect = accessoryRef.current?.getBoundingClientRect();
     sessionRef.current = {
       pointerId: event.pointerId,
+      mode,
       startX: event.clientX,
       startY: event.clientY,
       start: transform,
+      originX: boxRect ? boxRect.left + boxRect.width / 2 : event.clientX,
+      originY: boxRect ? boxRect.top + boxRect.height / 2 : event.clientY,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", endPointer);
     window.addEventListener("pointercancel", endPointer);
-  };
-
-  const placeOnLetter = async (clientX: number, clientY: number) => {
-    const image = imageRef.current;
-    if (!image || image.naturalWidth < 1) return;
-    const imageRect = image.getBoundingClientRect();
-    const scale = Math.min(
-      imageRect.width / image.naturalWidth,
-      imageRect.height / image.naturalHeight,
-    );
-    const w = image.naturalWidth * scale;
-    const h = image.naturalHeight * scale;
-    const rect = {
-      left: imageRect.left + (imageRect.width - w) / 2,
-      top: imageRect.top + (imageRect.height - h) / 2,
-      width: w,
-      height: h,
-    };
-    if (rect.width < 1 || rect.height < 1) return;
-    const tapX = ((clientX - rect.left) / rect.width) * image.naturalWidth;
-    try {
-      const canvas = document.createElement("canvas");
-      canvas.width = image.naturalWidth;
-      canvas.height = image.naturalHeight;
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) return;
-      ctx.drawImage(image, 0, 0);
-      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const band = scanLetterFromImageData(
-        pixels.data,
-        canvas.width,
-        canvas.height,
-        tapX,
-      );
-      if (!band) {
-        onChange(
-          sitOnLetter(accessoryId, logo, {
-            xPct: ((clientX - rect.left) / rect.width) * 100,
-            topPct: ((clientY - rect.top) / rect.height) * 100,
-          }),
-        );
-        return;
-      }
-      onChange(
-        sitOnLetter(
-          accessoryId,
-          logo,
-          bandToPercents(band, canvas.width, canvas.height),
-        ),
-      );
-    } catch {
-      onChange(
-        sitOnLetter(accessoryId, logo, {
-          xPct: ((clientX - rect.left) / rect.width) * 100,
-          topPct: ((clientY - rect.top) / rect.height) * 100,
-        }),
-      );
-    }
-  };
-
-  const onFramePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (preset !== "onLetter") return;
-    const target = event.target as HTMLElement;
-    if (target.closest("[data-accessory]")) return;
-    void placeOnLetter(event.clientX, event.clientY);
   };
 
   const onAccessoryKeyDown = (event: React.KeyboardEvent) => {
@@ -209,7 +191,39 @@ export function PreviewStage({
     if (event.key === "ArrowRight") move(step, 0);
     if (event.key === "ArrowUp") move(0, -step);
     if (event.key === "ArrowDown") move(0, step);
+    if (event.key === "+" || event.key === "=") {
+      event.preventDefault();
+      onChange({ ...current, scale: clamp(current.scale + 0.04, 0.22, 2.4) });
+    }
+    if (event.key === "-" || event.key === "_") {
+      event.preventDefault();
+      onChange({ ...current, scale: clamp(current.scale - 0.04, 0.22, 2.4) });
+    }
+    if (event.key === "[") {
+      event.preventDefault();
+      onChange({ ...current, rotation: current.rotation - 8 });
+    }
+    if (event.key === "]") {
+      event.preventDefault();
+      onChange({ ...current, rotation: current.rotation + 8 });
+    }
   };
+
+  useEffect(() => {
+    const node = accessoryRef.current;
+    if (!node) return;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      const current = transformRef.current;
+      const next = current.scale * (event.deltaY > 0 ? 0.96 : 1.04);
+      onChangeRef.current({
+        ...current,
+        scale: clamp(next, 0.22, 2.4),
+      });
+    };
+    node.addEventListener("wheel", onWheel, { passive: false });
+    return () => node.removeEventListener("wheel", onWheel);
+  }, [accessoryId]);
 
   return (
     <div
@@ -221,7 +235,6 @@ export function PreviewStage({
         paddingBottom: `${insets.bottom * 100}%`,
         paddingLeft: `${insets.left * 100}%`,
       }}
-      onPointerDown={onFramePointerDown}
     >
       {/* The logo is an img from a sanitized blob URL so user SVG never runs inline. */}
       {/* Blob URL from a local file. next/image cannot optimize user uploads. */}
@@ -245,10 +258,10 @@ export function PreviewStage({
         }}
       >
         <div
+          ref={accessoryRef}
           data-accessory
-          role="button"
           tabIndex={0}
-          aria-label="Mover adorno"
+          aria-label="Move, resize, or rotate accessory"
           className="absolute cursor-grab touch-none select-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:cursor-grabbing"
           style={{
             left: `${transform.x}%`,
@@ -257,7 +270,7 @@ export function PreviewStage({
             aspectRatio: `${vbW} / ${vbH}`,
             transform: `translate(-50%, -50%) rotate(${transform.rotation}deg)`,
           }}
-          onPointerDown={beginDrag}
+          onPointerDown={(event) => beginSession(event, "move")}
           onKeyDown={onAccessoryKeyDown}
         >
           <div
@@ -265,7 +278,7 @@ export function PreviewStage({
             className={
               reducedMotion
                 ? "h-full w-full"
-                : `xmas-motion xmas-${accessoryId} h-full w-full`
+                : `xmas-motion xmas-${motionId} xmas-${accessoryId} h-full w-full`
             }
           >
             <AccessoryArt
@@ -274,6 +287,18 @@ export function PreviewStage({
               className="pointer-events-none h-full w-full overflow-visible"
             />
           </div>
+          <button
+            type="button"
+            aria-label="Rotate"
+            className={`${handle} left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 cursor-grab`}
+            onPointerDown={(event) => beginSession(event, "rotate")}
+          />
+          <button
+            type="button"
+            aria-label="Resize"
+            className={`${handle} right-0 bottom-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize`}
+            onPointerDown={(event) => beginSession(event, "scale")}
+          />
         </div>
       </div>
     </div>

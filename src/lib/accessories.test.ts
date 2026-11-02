@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { test } from "node:test";
-import { accessoryMarkup } from "./accessories.ts";
+import { ACCESSORY_MOTION_CSS, MOTIONS, accessoryMarkup } from "./accessories.ts";
 
 test("no queda el logo de ejemplo", () => {
   assert.equal(
@@ -31,4 +31,14 @@ test("los adornos son redondeados", () => {
   assert.match(elf, /rx="15"/);
   assert.match(elf, /<circle /);
   assert.doesNotMatch(elf, /stroke-dasharray/);
+});
+
+test("motions are jump spin sway bounce", () => {
+  assert.deepEqual(
+    MOTIONS.map((item) => item.id),
+    ["jump", "spin", "sway", "bounce"],
+  );
+  assert.match(ACCESSORY_MOTION_CSS, /@keyframes xmas-spin/);
+  assert.match(ACCESSORY_MOTION_CSS, /@keyframes xmas-sway/);
+  assert.doesNotMatch(ACCESSORY_MOTION_CSS, /rotate\(210deg\)/);
 });

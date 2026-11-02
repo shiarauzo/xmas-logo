@@ -5,7 +5,12 @@ import {
 } from "./accessories";
 import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
 import { prefixSvgIds } from "./sanitize-svg";
-import type { AccessoryId, AccessoryTransform, LogoAsset } from "./types";
+import type {
+  AccessoryId,
+  AccessoryTransform,
+  LogoAsset,
+  MotionId,
+} from "./types";
 
 export { exportRasterScale, exportViewBox } from "./geometry";
 
@@ -13,6 +18,7 @@ export function buildExportSvg(
   logo: LogoAsset,
   accessoryId: AccessoryId,
   transform: AccessoryTransform,
+  motionId: MotionId,
   animated: boolean,
 ): string {
   const width = logo.naturalWidth || 800;
@@ -42,15 +48,15 @@ export function buildExportSvg(
 
   const art = accessoryMarkup(accessoryId, "acc-");
   const motionClass = animated
-    ? ` class="xmas-motion xmas-${accessoryId}"`
+    ? ` class="xmas-motion xmas-${motionId} xmas-${accessoryId}"`
     : "";
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${view.x} ${view.y} ${view.width} ${view.height}" width="${view.width}" height="${view.height}">
-  <title>Logo con adorno navideño</title>
+  <title>Xmastized logo</title>
   <style>${ACCESSORY_MOTION_CSS}</style>
   ${logoLayer}
-  <g id="adorno" transform="translate(${tx} ${ty}) rotate(${transform.rotation})">
+  <g id="accessory" transform="translate(${tx} ${ty}) rotate(${transform.rotation})">
     <g${motionClass}>
       <svg x="${-accW / 2}" y="${-accH / 2}" width="${accW}" height="${accH}" viewBox="0 0 ${vbW} ${vbH}" overflow="visible">
         ${art}
@@ -75,9 +81,10 @@ export function downloadAnimatedSvg(
   logo: LogoAsset,
   accessoryId: AccessoryId,
   transform: AccessoryTransform,
+  motionId: MotionId,
 ) {
-  const svg = buildExportSvg(logo, accessoryId, transform, true);
-  downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), "logo-navidad.svg");
+  const svg = buildExportSvg(logo, accessoryId, transform, motionId, true);
+  downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), "xmastize-logo.svg");
 }
 
 export async function downloadPng(
@@ -85,7 +92,7 @@ export async function downloadPng(
   accessoryId: AccessoryId,
   transform: AccessoryTransform,
 ) {
-  const svg = buildExportSvg(logo, accessoryId, transform, false);
+  const svg = buildExportSvg(logo, accessoryId, transform, "jump", false);
   const view = exportViewBox(
     logo.naturalWidth || 800,
     logo.naturalHeight || 800,
@@ -102,15 +109,15 @@ export async function downloadPng(
     canvas.width = Math.max(1, Math.round(view.width * scale));
     canvas.height = Math.max(1, Math.round(view.height * scale));
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("No se pudo crear la imagen.");
+    if (!ctx) throw new Error("Couldn’t create the image.");
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     const png = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
-        (value) => (value ? resolve(value) : reject(new Error("No se pudo crear la imagen."))),
+        (value) => (value ? resolve(value) : reject(new Error("Couldn’t create the image."))),
         "image/png",
       );
     });
-    downloadBlob(png, "logo-navidad.png");
+    downloadBlob(png, "xmastize-logo.png");
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -120,7 +127,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("No se pudo crear la imagen."));
+    image.onerror = () => reject(new Error("Couldn’t create the image."));
     image.src = src;
   });
 }
