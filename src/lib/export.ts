@@ -1,12 +1,11 @@
 import {
+  ACCESSORY_BASE_SIZE,
   ACCESSORY_BY_ID,
   ACCESSORY_MOTION_CSS,
   accessoryMarkup,
 } from "./accessories";
 import { prefixSvgIds } from "./sanitize-svg";
 import type { AccessoryId, AccessoryTransform, LogoAsset } from "./types";
-
-const BASE_SIZE = 0.46;
 
 export function buildExportSvg(
   logo: LogoAsset,
@@ -18,7 +17,7 @@ export function buildExportSvg(
   const height = logo.naturalHeight || 800;
   const accessory = ACCESSORY_BY_ID[accessoryId];
   const [vbW, vbH] = accessory.viewBox;
-  const accW = width * BASE_SIZE * transform.scale;
+  const accW = width * ACCESSORY_BASE_SIZE * transform.scale;
   const accH = accW * (vbH / vbW);
   const tx = (transform.x / 100) * width;
   const ty = (transform.y / 100) * height;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ACCESSORIES, ACCESSORY_MOTION_CSS, PRESETS } from "@/lib/accessories";
+import { ACCESSORIES, ACCESSORY_MOTION_CSS, placementFor } from "@/lib/accessories";
 import { downloadAnimatedSvg, downloadPng } from "@/lib/export";
 import { loadSampleLogo, logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
@@ -30,9 +30,13 @@ function useReducedMotion() {
 export function Studio() {
   const [logo, setLogo] = useState<LogoAsset | null>(null);
   const [accessoryId, setAccessoryId] = useState<AccessoryId>("hat");
-  const [transform, setTransform] = useState<AccessoryTransform>(
-    PRESETS.onTop.hat,
-  );
+  const [preset, setPreset] = useState<PlacementPreset>("onTop");
+  const [transform, setTransform] = useState<AccessoryTransform>({
+    x: 50,
+    y: -20,
+    scale: 0.48,
+    rotation: -8,
+  });
   const [playId, setPlayId] = useState(0);
   const [message, setMessage] = useState("Logo de ejemplo listo para jugar.");
   const [busy, setBusy] = useState(false);
@@ -50,6 +54,7 @@ export function Studio() {
         }
         logoRef.current = sample;
         setLogo(sample);
+        setTransform(placementFor("onTop", "hat", sample));
       })
       .catch(() => {
         if (!cancelled) setMessage("No se pudo cargar el logo de ejemplo.");
@@ -64,6 +69,7 @@ export function Studio() {
     releaseLogo(logoRef.current);
     logoRef.current = next;
     setLogo(next);
+    setTransform(placementFor(preset, accessoryId, next));
     setMessage(note);
   };
 
@@ -77,16 +83,22 @@ export function Studio() {
     }
   };
 
-  const applyPreset = (preset: PlacementPreset) => {
-    setTransform(PRESETS[preset][accessoryId]);
+  const applyPreset = (nextPreset: PlacementPreset) => {
+    if (!logo) return;
+    setPreset(nextPreset);
+    setTransform(placementFor(nextPreset, accessoryId, logo));
     setMessage(
-      preset === "onTop" ? "Encima del logo." : "En una letra, más chico y ladeado.",
+      nextPreset === "onTop"
+        ? "Encima del logo."
+        : "En una letra, más chico y ladeado.",
     );
   };
 
   const chooseAccessory = (id: AccessoryId) => {
     setAccessoryId(id);
-    setTransform(PRESETS.onTop[id]);
+    if (logo) {
+      setTransform(placementFor(preset, id, logo));
+    }
     setPlayId((value) => value + 1);
   };
 

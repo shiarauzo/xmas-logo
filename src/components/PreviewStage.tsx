@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ACCESSORY_BY_ID } from "@/lib/accessories";
+import { ACCESSORY_BASE_SIZE, ACCESSORY_BY_ID } from "@/lib/accessories";
 import type { AccessoryId, AccessoryTransform, LogoAsset } from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
 
@@ -171,7 +171,7 @@ export function PreviewStage({
   return (
     <div
       ref={frameRef}
-      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-hidden rounded-[1.6rem] border border-[#e3d2bf] bg-checker"
+      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-hidden rounded-[1.6rem] border border-[#e3d2bf] bg-checker px-[9%] py-[9%]"
     >
       {/* The logo is an img from a sanitized blob URL so user SVG never runs inline. */}
       {/* Blob URL from a local file. next/image cannot optimize user uploads. */}
@@ -180,7 +180,7 @@ export function PreviewStage({
         src={logo.objectUrl}
         alt={logo.name}
         onLoad={measure}
-        className="max-h-full max-w-full object-contain"
+        className="max-h-full max-w-full object-contain object-center"
         draggable={false}
       />
       <div
@@ -198,7 +198,7 @@ export function PreviewStage({
           style={{
             left: `${transform.x}%`,
             top: `${transform.y}%`,
-            width: `${transform.scale * 46}%`,
+            width: `${transform.scale * ACCESSORY_BASE_SIZE * 100}%`,
             aspectRatio: `${vbW} / ${vbH}`,
             transform: `translate(-50%, -50%) rotate(${transform.rotation}deg)`,
           }}

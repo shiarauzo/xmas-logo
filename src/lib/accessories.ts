@@ -48,23 +48,60 @@ export const ACCESSORY_BY_ID = Object.fromEntries(
   ACCESSORIES.map((item) => [item.id, item]),
 ) as Record<AccessoryId, AccessoryMeta>;
 
-export const PRESETS: Record<
-  PlacementPreset,
-  Record<AccessoryId, AccessoryTransform>
-> = {
-  onTop: {
-    hat: { x: 50, y: 34, scale: 0.84, rotation: -12 },
-    beard: { x: 50, y: 78, scale: 1.12, rotation: 0 },
-    cane: { x: 88, y: 52, scale: 0.92, rotation: 10 },
-    elf: { x: 52, y: 30, scale: 0.8, rotation: 10 },
-  },
-  onLetter: {
-    hat: { x: 17, y: 20, scale: 0.44, rotation: -18 },
-    beard: { x: 20, y: 62, scale: 0.4, rotation: 4 },
-    cane: { x: 22, y: 48, scale: 0.36, rotation: -14 },
-    elf: { x: 84, y: 16, scale: 0.4, rotation: 16 },
-  },
-};
+export const ACCESSORY_BASE_SIZE = 0.46;
+
+function accessoryHeightPct(
+  id: AccessoryId,
+  scale: number,
+  aspect: number,
+) {
+  const [vbW, vbH] = ACCESSORY_BY_ID[id].viewBox;
+  return scale * ACCESSORY_BASE_SIZE * 100 * (vbH / vbW) * aspect;
+}
+
+export function placementFor(
+  preset: PlacementPreset,
+  id: AccessoryId,
+  logo: { naturalWidth: number; naturalHeight: number },
+): AccessoryTransform {
+  const aspect = logo.naturalWidth / Math.max(logo.naturalHeight, 1);
+
+  if (preset === "onLetter") {
+    const scale = 0.34;
+    const heightPct = accessoryHeightPct(id, scale, aspect);
+    const letterX = 40;
+    const letterTop = 32;
+    if (id === "beard") {
+      return { x: 40, y: 62, scale, rotation: 4 };
+    }
+    if (id === "cane") {
+      return { x: 40, y: 44, scale: 0.3, rotation: -14 };
+    }
+    return {
+      x: id === "elf" ? 82 : letterX,
+      y: letterTop - heightPct / 2 + 7,
+      scale,
+      rotation: id === "elf" ? 16 : -18,
+    };
+  }
+
+  const scale = id === "cane" ? 0.4 : 0.48;
+  const heightPct = accessoryHeightPct(id, scale, aspect);
+  const sit = 12;
+
+  if (id === "beard") {
+    return { x: 50, y: 100 + heightPct / 2 - 7, scale: 0.52, rotation: 0 };
+  }
+  if (id === "cane") {
+    return { x: 93, y: sit - heightPct / 2, scale, rotation: 10 };
+  }
+  return {
+    x: 50,
+    y: sit - heightPct / 2,
+    scale,
+    rotation: id === "elf" ? 8 : -8,
+  };
+}
 
 export function accessoryMarkup(id: AccessoryId, prefix: string): string {
   switch (id) {
