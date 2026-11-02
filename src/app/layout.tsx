@@ -14,8 +14,7 @@ const fredoka = Fredoka({
 
 export const metadata: Metadata = {
   title: "Gorrito navideño",
-  description:
-    "Sube tu logo y ponle un adorno navideño animado. Todo se queda en tu navegador.",
+  description: "Ponle un adorno navideño a tu logo.",
   icons: {
     icon: "/favicon.svg",
   },
