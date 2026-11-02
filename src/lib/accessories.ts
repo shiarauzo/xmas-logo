@@ -1,3 +1,4 @@
+import { ACCESSORY_BASE_SIZE, ACCESSORY_VIEWBOX } from "./constants.ts";
 import type { AccessoryId, AccessoryTransform, PlacementPreset } from "./types";
 
 export type AccessoryMeta = {
@@ -14,7 +15,7 @@ export const ACCESSORIES: AccessoryMeta[] = [
     id: "hat",
     name: "Gorro",
     hint: "Gorro de Navidad",
-    viewBox: [160, 150],
+    viewBox: ACCESSORY_VIEWBOX.hat,
     origin: "50% 86%",
     animation: "xmas-hat",
   },
@@ -22,7 +23,7 @@ export const ACCESSORIES: AccessoryMeta[] = [
     id: "beard",
     name: "Barba",
     hint: "Barba navideña",
-    viewBox: [180, 140],
+    viewBox: ACCESSORY_VIEWBOX.beard,
     origin: "50% 18%",
     animation: "xmas-beard",
   },
@@ -30,7 +31,7 @@ export const ACCESSORIES: AccessoryMeta[] = [
     id: "cane",
     name: "Bastón",
     hint: "Bastón de Navidad",
-    viewBox: [120, 180],
+    viewBox: ACCESSORY_VIEWBOX.cane,
     origin: "50% 92%",
     animation: "xmas-cane",
   },
@@ -38,7 +39,7 @@ export const ACCESSORIES: AccessoryMeta[] = [
     id: "elf",
     name: "Duende",
     hint: "Gorro de duende",
-    viewBox: [150, 170],
+    viewBox: ACCESSORY_VIEWBOX.elf,
     origin: "50% 88%",
     animation: "xmas-elf",
   },
@@ -48,7 +49,7 @@ export const ACCESSORY_BY_ID = Object.fromEntries(
   ACCESSORIES.map((item) => [item.id, item]),
 ) as Record<AccessoryId, AccessoryMeta>;
 
-export const ACCESSORY_BASE_SIZE = 0.46;
+export { ACCESSORY_BASE_SIZE };
 
 function accessoryHeightPct(
   id: AccessoryId,
@@ -67,19 +68,19 @@ export function placementFor(
   const aspect = logo.naturalWidth / Math.max(logo.naturalHeight, 1);
 
   if (preset === "onLetter") {
-    const scale = 0.34;
+    const scale = id === "cane" ? 0.3 : 0.34;
     const heightPct = accessoryHeightPct(id, scale, aspect);
-    const letterX = 40;
-    const letterTop = 32;
+    const letterX = 16;
+    const letterTop = 22;
     if (id === "beard") {
-      return { x: 40, y: 62, scale, rotation: 4 };
+      return { x: letterX, y: 58, scale, rotation: 4 };
     }
     if (id === "cane") {
-      return { x: 40, y: 44, scale: 0.3, rotation: -14 };
+      return { x: letterX, y: letterTop + 18, scale, rotation: -14 };
     }
     return {
-      x: id === "elf" ? 82 : letterX,
-      y: letterTop - heightPct / 2 + 7,
+      x: letterX,
+      y: letterTop - heightPct / 2 + 6,
       scale,
       rotation: id === "elf" ? 16 : -18,
     };
@@ -257,43 +258,26 @@ function elfHatMarkup(p: string): string {
 }
 
 export const ACCESSORY_MOTION_CSS = `
-@keyframes xmas-hat {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  10% { transform: translate(0, 4px) rotate(-8deg) scaleY(.94); }
-  28% { transform: translate(0, -20px) rotate(-12deg); }
-  46% { transform: translate(0, -16px) rotate(220deg); }
-  62% { transform: translate(0, -4px) rotate(360deg); }
-  78% { transform: translate(0, 2px) rotate(360deg); }
-}
-@keyframes xmas-beard {
-  0%, 100% { transform: rotate(0deg) skewX(0deg); }
-  20% { transform: rotate(-5deg) skewX(-4deg); }
-  48% { transform: rotate(4deg) skewX(3deg); }
-  74% { transform: rotate(-3deg) skewX(2deg); }
-}
-@keyframes xmas-cane {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  28% { transform: translateY(-12px) rotate(-10deg); }
-  46% { transform: translateY(3px) rotate(6deg); }
-  68% { transform: translateY(-7px) rotate(-4deg); }
-}
-@keyframes xmas-elf {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  18% { transform: translate(2px, 3px) rotate(-6deg); }
-  40% { transform: translate(-2px, -16px) rotate(14deg); }
-  62% { transform: translate(1px, -4px) rotate(-8deg); }
-  80% { transform: translate(0, 0) rotate(4deg); }
+@keyframes xmas-jump {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  14% { transform: translate(0, 6px) rotate(-10deg) scaleY(.92); }
+  42% { transform: translate(0, -28px) rotate(210deg); }
+  62% { transform: translate(0, -6px) rotate(340deg); }
+  78% { transform: translate(0, 3px) rotate(360deg) scaleY(.96); }
+  100% { transform: translate(0, 0) rotate(360deg); }
 }
 .xmas-motion {
-  animation-duration: 2.8s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+  animation-name: xmas-jump;
+  animation-duration: .95s;
+  animation-timing-function: cubic-bezier(.2, .7, .2, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
   transform-box: fill-box;
 }
-.xmas-hat { animation-name: xmas-hat; transform-origin: 50% 86%; }
-.xmas-beard { animation-name: xmas-beard; transform-origin: 50% 18%; }
-.xmas-cane { animation-name: xmas-cane; transform-origin: 50% 92%; }
-.xmas-elf { animation-name: xmas-elf; transform-origin: 50% 88%; }
+.xmas-hat { transform-origin: 50% 86%; }
+.xmas-beard { transform-origin: 50% 18%; }
+.xmas-cane { transform-origin: 50% 92%; }
+.xmas-elf { transform-origin: 50% 88%; }
 @media (prefers-reduced-motion: reduce) {
   .xmas-motion,
   .xmas-motion * {

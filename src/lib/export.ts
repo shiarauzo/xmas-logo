@@ -1,11 +1,13 @@
 import {
-  ACCESSORY_BASE_SIZE,
   ACCESSORY_BY_ID,
   ACCESSORY_MOTION_CSS,
   accessoryMarkup,
 } from "./accessories";
+import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
 import { prefixSvgIds } from "./sanitize-svg";
 import type { AccessoryId, AccessoryTransform, LogoAsset } from "./types";
+
+export { exportRasterScale, exportViewBox } from "./geometry";
 
 export function buildExportSvg(
   logo: LogoAsset,
@@ -17,10 +19,14 @@ export function buildExportSvg(
   const height = logo.naturalHeight || 800;
   const accessory = ACCESSORY_BY_ID[accessoryId];
   const [vbW, vbH] = accessory.viewBox;
-  const accW = width * ACCESSORY_BASE_SIZE * transform.scale;
-  const accH = accW * (vbH / vbW);
+  const { width: accW, height: accH } = accessorySize(
+    accessoryId,
+    transform.scale,
+    width,
+  );
   const tx = (transform.x / 100) * width;
   const ty = (transform.y / 100) * height;
+  const view = exportViewBox(width, height, accessoryId, transform);
 
   let logoLayer: string;
   if (logo.kind === "svg" && logo.sanitizedSvg) {
@@ -40,7 +46,7 @@ export function buildExportSvg(
     : "";
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${view.x} ${view.y} ${view.width} ${view.height}" width="${view.width}" height="${view.height}">
   <title>Logo con adorno navideño</title>
   <style>${ACCESSORY_MOTION_CSS}</style>
   ${logoLayer}
@@ -80,15 +86,21 @@ export async function downloadPng(
   transform: AccessoryTransform,
 ) {
   const svg = buildExportSvg(logo, accessoryId, transform, false);
+  const view = exportViewBox(
+    logo.naturalWidth || 800,
+    logo.naturalHeight || 800,
+    accessoryId,
+    transform,
+  );
   const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
 
   try {
     const image = await loadImage(url);
-    const scale = Math.min(2, 2000 / Math.max(logo.naturalWidth, logo.naturalHeight));
+    const scale = exportRasterScale(view.width, view.height);
     const canvas = document.createElement("canvas");
-    canvas.width = Math.max(1, Math.round(logo.naturalWidth * scale));
-    canvas.height = Math.max(1, Math.round(logo.naturalHeight * scale));
+    canvas.width = Math.max(1, Math.round(view.width * scale));
+    canvas.height = Math.max(1, Math.round(view.height * scale));
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("No se pudo crear la imagen.");
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
