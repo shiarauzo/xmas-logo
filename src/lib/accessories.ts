@@ -1,4 +1,8 @@
-import { ACCESSORY_BASE_SIZE, ACCESSORY_VIEWBOX } from "./constants.ts";
+import {
+  ACCESSORY_BASE_SIZE,
+  ACCESSORY_JUMP_PCT,
+  ACCESSORY_VIEWBOX,
+} from "./constants.ts";
 import type { AccessoryId, AccessoryTransform, PlacementPreset } from "./types";
 
 export type AccessoryMeta = {
@@ -257,13 +261,15 @@ function elfHatMarkup(p: string): string {
   `;
 }
 
+const jumpPct = ACCESSORY_JUMP_PCT * 100;
+
 export const ACCESSORY_MOTION_CSS = `
 @keyframes xmas-jump {
   0% { transform: translate(0, 0) rotate(0deg); }
-  14% { transform: translate(0, 6px) rotate(-10deg) scaleY(.92); }
-  42% { transform: translate(0, -28px) rotate(210deg); }
-  62% { transform: translate(0, -6px) rotate(340deg); }
-  78% { transform: translate(0, 3px) rotate(360deg) scaleY(.96); }
+  14% { transform: translate(0, 6%) rotate(-10deg) scaleY(.92); }
+  42% { transform: translate(0, -${jumpPct}%) rotate(210deg); }
+  62% { transform: translate(0, -6%) rotate(340deg); }
+  78% { transform: translate(0, 3%) rotate(360deg) scaleY(.96); }
   100% { transform: translate(0, 0) rotate(360deg); }
 }
 .xmas-motion {

@@ -16,13 +16,16 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
   viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${geist.variable} dark h-full antialiased`}>
+    <html lang="es" className={`${geist.variable} h-full antialiased`}>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         {children}
       </body>

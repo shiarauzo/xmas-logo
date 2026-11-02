@@ -1,4 +1,8 @@
-import { ACCESSORY_BASE_SIZE, ACCESSORY_VIEWBOX } from "./constants.ts";
+import {
+  ACCESSORY_BASE_SIZE,
+  ACCESSORY_JUMP_PCT,
+  ACCESSORY_VIEWBOX,
+} from "./constants.ts";
 import type { AccessoryId, AccessoryTransform } from "./types";
 
 export type Box = {
@@ -25,7 +29,7 @@ export function accessoryBox(
   transform: AccessoryTransform,
 ): Box {
   const { width, height } = accessorySize(id, transform.scale, logoWidth);
-  const pad = Math.max(width, height) * 0.14;
+  const pad = Math.max(width, height) * 0.14 + height * ACCESSORY_JUMP_PCT;
   const hw = width / 2 + pad;
   const hh = height / 2 + pad;
   const cx = (transform.x / 100) * logoWidth;

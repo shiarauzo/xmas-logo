@@ -8,7 +8,7 @@
     <path d="M70 54 C76 40 98 38 104 54" fill="none" stroke="#d4a054" stroke-width="6" stroke-linecap="round"/>
   </g>
   <g fill="none" stroke="#1f3d2b" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M214 64 V156 L286 64 V156"/>
+    <path d="M214 156 V64 L286 156 V64"/>
     <path d="M316 64 V156"/>
     <path d="M352 64 V156 C352 156 352 156 404 156 C430 156 446 132 446 110 C446 88 430 64 404 64 H352"/>
     <circle cx="484" cy="110" r="46"/>
