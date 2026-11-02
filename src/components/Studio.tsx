@@ -16,6 +16,7 @@ import type {
   MotionId,
 } from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
+import { ExampleGallery } from "./ExampleGallery";
 import { PreviewStage } from "./PreviewStage";
 
 function useReducedMotion() {
@@ -305,6 +306,7 @@ export function Studio() {
             )}
           </div>
         </div>
+        <ExampleGallery />
       </div>
     </div>
   );
