@@ -110,7 +110,7 @@ export function Studio() {
     if (!file) return;
     const gen = (uploadGen.current += 1);
     setBusy(true);
-    setMessage("Reading…");
+    setMessage("Loading logo…");
     try {
       const next = await logoFromFile(file);
       if (gen !== uploadGen.current) {
@@ -120,7 +120,7 @@ export function Studio() {
       replaceLogo(next);
     } catch (error) {
       if (gen !== uploadGen.current) return;
-      setMessage(error instanceof Error ? error.message : "Couldn’t open.");
+      setMessage(error instanceof Error ? error.message : "Couldn’t open the logo. Try another file.");
     } finally {
       if (gen === uploadGen.current) setBusy(false);
     }
@@ -152,7 +152,7 @@ export function Studio() {
       if (kind === "png") await downloadPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Couldn’t download.");
+      setMessage(error instanceof Error ? error.message : "Couldn’t download. Try again.");
     } finally {
       setBusy(false);
     }
@@ -173,7 +173,7 @@ export function Studio() {
           </h1>
           <div
             role="tablist"
-            aria-label="Studio"
+            aria-label="Sections"
             className="flex h-11 items-center rounded-lg bg-secondary p-1"
           >
             {(["create", "gallery"] as const).map((id) => (
@@ -200,7 +200,7 @@ export function Studio() {
               accept="image/svg+xml,image/png,image/jpeg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
               className="sr-only"
               tabIndex={-1}
-              aria-label="Upload"
+              aria-label="Upload logo"
               onChange={(event) => {
                 void onUpload(event.target.files?.[0]);
                 event.currentTarget.value = "";
@@ -208,7 +208,7 @@ export function Studio() {
             />
             <button
               type="button"
-              aria-label="Upload"
+              aria-label="Upload logo"
               onClick={openPicker}
               className={`inline-flex size-11 items-center justify-center rounded-md border border-border bg-background hover:bg-accent hover:text-accent-foreground ${press} ${focusRing}`}
             >
@@ -277,7 +277,7 @@ export function Studio() {
               </div>
               {reducedMotion ? (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Animation paused.
+                  Animation paused: reduce motion is on in your system.
                 </p>
               ) : null}
             </aside>
@@ -296,7 +296,6 @@ export function Studio() {
               ) : (
                 <button
                   type="button"
-                  aria-label="Upload"
                   onClick={openPicker}
                   onDragOver={onDragOver}
                   onDragLeave={onDragLeave}
@@ -307,7 +306,9 @@ export function Studio() {
                       ? "border-foreground bg-accent"
                       : "border-border bg-muted/20"
                   }`}
-                />
+                >
+                  <span className="text-sm text-muted-foreground">Drop your logo here or click to upload <span className="whitespace-nowrap">(SVG, PNG, JPG or WebP)</span></span>
+                </button>
               )}
             </div>
           </div>

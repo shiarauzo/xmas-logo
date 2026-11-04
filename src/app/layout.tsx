@@ -9,7 +9,15 @@ const geist = Geist({
 
 export const metadata: Metadata = {
   title: "Xmastize your logo",
-  description: "Drop a Christmas accessory on your logo.",
+  description: "Add a Santa hat, beard, candy cane or elf hat to your logo, then download it as GIF, PNG or SVG.",
+  openGraph: {
+    title: "Xmastize your logo",
+    description: "Add a Santa hat, beard, candy cane or elf hat to your logo, then download it as GIF, PNG or SVG.",
+    url: "https://xmas-logo.vercel.app",
+    siteName: "Xmastize your logo",
+    locale: "en_US",
+    type: "website",
+  },
   icons: {
     icon: "/favicon.svg",
   },

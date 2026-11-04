@@ -110,11 +110,11 @@ export async function downloadPng(
     canvas.width = Math.max(1, Math.round(view.width * scale));
     canvas.height = Math.max(1, Math.round(view.height * scale));
     const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Couldn’t create the image.");
+    if (!ctx) throw new Error("Couldn’t create the image. Try again.");
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
     const png = await new Promise<Blob>((resolve, reject) => {
       canvas.toBlob(
-        (value) => (value ? resolve(value) : reject(new Error("Couldn’t create the image."))),
+        (value) => (value ? resolve(value) : reject(new Error("Couldn’t create the image. Try again."))),
         "image/png",
       );
     });
@@ -155,7 +155,7 @@ export async function downloadGif(
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Couldn’t create the image.");
+      if (!ctx) throw new Error("Couldn’t create the image. Try again.");
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, width, height);
       ctx.drawImage(image, 0, 0, width, height);
@@ -196,7 +196,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Couldn’t create the image."));
+    image.onerror = () => reject(new Error("Couldn’t create the image. Try again."));
     image.src = src;
   });
 }
