@@ -35,3 +35,13 @@ test("sanitizeSvgSized sigue limpiando scripts y eventos", async () => {
   const { svg } = sanitizeSvgSized(cases[3]);
   assert.doesNotMatch(svg, /script|onclick/);
 });
+
+test("un SVG con solo width y viewBox mantiene la proporción del viewBox", async () => {
+  const { sanitizeSvgSized } = await import("./sanitize-svg.ts");
+  const sized = sanitizeSvgSized(`<svg ${NS} width="200" viewBox="0 0 400 100"><rect width="400" height="100"/></svg>`);
+  assert.equal(sized.width, 200);
+  assert.equal(sized.height, 50);
+  const tall = sanitizeSvgSized(`<svg ${NS} height="300" viewBox="0 0 100 600"><rect width="100" height="600"/></svg>`);
+  assert.equal(tall.width, 50);
+  assert.equal(tall.height, 300);
+});

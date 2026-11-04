@@ -156,6 +156,12 @@ function sizeDoc(doc: Document) {
   let width = parseLength(root.getAttribute("width"));
   let height = parseLength(root.getAttribute("height"));
 
+  const hasWidth = Number.isFinite(width) && width > 0;
+  const hasHeight = Number.isFinite(height) && height > 0;
+  const hasBox = Number.isFinite(vbW) && Number.isFinite(vbH) && vbW > 0 && vbH > 0;
+  // With one side given, the other follows the viewBox proportion.
+  if (hasWidth && !hasHeight && hasBox) height = (width * vbH) / vbW;
+  else if (hasHeight && !hasWidth && hasBox) width = (height * vbW) / vbH;
   if (!Number.isFinite(width) || width <= 0) width = Number.isFinite(vbW) ? vbW : 800;
   if (!Number.isFinite(height) || height <= 0) height = Number.isFinite(vbH) ? vbH : 800;
   if (!root.getAttribute("viewBox")) {
