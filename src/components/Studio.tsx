@@ -159,14 +159,15 @@ export function Studio() {
     if (!logo) return;
     if (kind === "svg") {
       downloadAnimatedSvg(logo, accessoryId, transform, motionId);
-      trackEvent("logo_downloaded", { format: "svg" });
+      trackEvent("logo_downloaded", { format: "svg", method: "download" });
       return;
     }
     setBusy(true);
     try {
-      if (kind === "png") await downloadPng(logo, accessoryId, transform);
+      let method: "share" | "download" = "download";
+      if (kind === "png") method = await downloadPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
-      trackEvent("logo_downloaded", { format: kind });
+      trackEvent("logo_downloaded", { format: kind, method });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Couldn’t download. Try again.");
     } finally {

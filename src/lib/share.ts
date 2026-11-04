@@ -35,3 +35,16 @@ export async function shareFile(file: File, env: ShareEnv = browserEnv()): Promi
     return false;
   }
 }
+
+export type DeliveryMethod = "share" | "download";
+
+/** Shares the file when possible, otherwise downloads it; says which happened. */
+export async function shareOrDownload(
+  file: File,
+  download: () => void,
+  env: ShareEnv = browserEnv(),
+): Promise<DeliveryMethod> {
+  if (await shareFile(file, env)) return "share";
+  download();
+  return "download";
+}
