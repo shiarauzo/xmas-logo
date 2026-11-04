@@ -159,7 +159,11 @@ export function Studio() {
   };
 
   const motionStyle = useMemo(
-    () => ({ __html: ACCESSORY_MOTION_CSS }),
+    // The preview plays the motion once and rests; it replays when the
+    // accessory or motion changes (PreviewStage remounts on playId).
+    () => ({
+      __html: `${ACCESSORY_MOTION_CSS}\n.xmas-once .xmas-motion { animation-iteration-count: 1; }`,
+    }),
     [],
   );
 
@@ -282,7 +286,7 @@ export function Studio() {
               ) : null}
             </aside>
 
-            <div className="h-full min-h-[22rem]">
+            <div className="xmas-once h-full min-h-[22rem]">
               {logo ? (
                 <PreviewStage
                   logo={logo}
