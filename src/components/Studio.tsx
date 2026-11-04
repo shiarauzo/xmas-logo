@@ -275,6 +275,11 @@ export function Studio() {
                   );
                 })}
               </div>
+              {logo ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Drag the accessory or its handles. Keys: arrows move, + / − resize, [ ] rotate.
+                </p>
+              ) : null}
               {reducedMotion ? (
                 <p className="mt-3 text-sm text-muted-foreground">
                   Animation paused: reduce motion is on in your system.
