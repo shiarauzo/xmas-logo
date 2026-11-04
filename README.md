@@ -1,4 +1,4 @@
-# Xmastize your logo
+# Logo navideño
 
 A small open-source web app: upload your logo, drop a Christmas accessory on it, watch it move, download it.
 
