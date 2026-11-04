@@ -56,12 +56,31 @@ function sampleContext(width: number, height: number) {
 }
 
 /** Reads the visible pixels from a small copy of the logo. */
-export function readInk(measured: Measured): LogoInk | undefined {
+/** A small copy of a raster file, decoded off the main thread when possible. */
+async function rasterSample(file: Blob, width: number, height: number) {
+  if (typeof createImageBitmap !== "function") return undefined;
+  try {
+    return await createImageBitmap(file, {
+      resizeWidth: width,
+      resizeHeight: height,
+      resizeQuality: "medium",
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+export async function readInk(
+  measured: Measured,
+  file?: Blob,
+): Promise<LogoInk | undefined> {
   try {
     const sample = inkSampleSize(measured.width, measured.height);
     const ctx = sampleContext(sample.width, sample.height);
     if (!ctx) return undefined;
-    ctx.drawImage(measured.image, 0, 0, sample.width, sample.height);
+    const bitmap = file && (await rasterSample(file, sample.width, sample.height));
+    ctx.drawImage(bitmap ?? measured.image, 0, 0, sample.width, sample.height);
+    bitmap?.close();
     const pixels = ctx.getImageData(0, 0, sample.width, sample.height).data;
     const ink = analyzeInk(pixels, sample.width, sample.height);
     const sx = measured.width / sample.width;
@@ -97,7 +116,7 @@ export async function logoFromSvgText(
       sanitizedSvg: sized.svg,
       naturalWidth: measured.width || sized.width,
       naturalHeight: measured.height || sized.height,
-      ink: readInk(measured),
+      ink: await readInk(measured),
     };
   } catch (error) {
     revokeIfNeeded(objectUrl);
@@ -126,7 +145,7 @@ export async function logoFromFile(file: File): Promise<LogoAsset> {
       dataUrl,
       naturalWidth: measured.width,
       naturalHeight: measured.height,
-      ink: readInk(measured),
+      ink: await readInk(measured, file),
     };
   } catch (error) {
     revokeIfNeeded(objectUrl);
