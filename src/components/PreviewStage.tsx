@@ -33,8 +33,16 @@ type PointerSession = {
   originY: number;
 };
 
+// 44px touch target around a 20px visible dot.
 const handle =
-  "absolute z-[3] size-5 rounded-full border-2 border-background bg-primary shadow-sm";
+  "absolute z-[3] flex size-11 items-center justify-center rounded-full touch-none";
+
+const handleDot = (
+  <span
+    aria-hidden="true"
+    className="size-5 rounded-full border-2 border-background bg-primary shadow-sm"
+  />
+);
 
 export function PreviewStage({
   logo,
@@ -261,7 +269,7 @@ export function PreviewStage({
           ref={accessoryRef}
           data-accessory
           tabIndex={0}
-          aria-label="Accessory: drag it or use arrow keys and + / −"
+          aria-label="Accessory: drag it, arrow keys move, + / − resize, [ and ] rotate"
           className="absolute cursor-grab touch-none select-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:cursor-grabbing"
           style={{
             left: `${transform.x}%`,
@@ -290,15 +298,21 @@ export function PreviewStage({
           <button
             type="button"
             aria-label="Rotate accessory"
+            tabIndex={-1}
             className={`${handle} left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 cursor-grab`}
             onPointerDown={(event) => beginSession(event, "rotate")}
-          />
+          >
+            {handleDot}
+          </button>
           <button
             type="button"
             aria-label="Resize accessory"
+            tabIndex={-1}
             className={`${handle} right-0 bottom-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize`}
             onPointerDown={(event) => beginSession(event, "scale")}
-          />
+          >
+            {handleDot}
+          </button>
         </div>
       </div>
     </div>
