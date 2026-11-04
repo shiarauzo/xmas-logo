@@ -277,7 +277,7 @@ export function Studio() {
               </div>
               {reducedMotion ? (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  Animation paused.
+                  Animation paused: reduce motion is on in your system.
                 </p>
               ) : null}
             </aside>
