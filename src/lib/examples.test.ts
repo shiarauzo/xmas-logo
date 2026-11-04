@@ -25,8 +25,8 @@ test("the hat sits on the logo, not above the card", () => {
 });
 
 test("the cane hooks the last letter of a wide wordmark", () => {
-  const kora = EXAMPLES.find((item) => item.id === "kora");
-  assert.ok(kora);
-  const cane = exampleTransform(kora);
+  const quena = EXAMPLES.find((item) => item.id === "quena");
+  assert.ok(quena);
+  const cane = exampleTransform(quena);
   assert.ok(cane.x > 80);
 });
