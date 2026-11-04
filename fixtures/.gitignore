@@ -1,0 +1,4 @@
+# Big files: rebuild with node fixtures/generate.mjs
+big4000.png
+big.svg
+large-4000.png

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   ACCESSORIES,
   ACCESSORY_MOTION_CSS,
   MOTIONS,
   placementFor,
 } from "@/lib/accessories";
+import { trackEvent } from "@/lib/analytics";
 import { downloadAnimatedSvg, downloadGif, downloadPng } from "@/lib/export";
 import { logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
@@ -45,8 +46,14 @@ const btn =
 
 type Tab = "create" | "gallery";
 
+const noopSubscribe = () => () => {};
+const hashIsGallery = () => window.location.hash === "#gallery";
+const serverHashIsGallery = () => false;
+
 export function Studio() {
-  const [tab, setTab] = useState<Tab>("create");
+  const [chosenTab, setTab] = useState<Tab | null>(null);
+  const startsOnGallery = useSyncExternalStore(noopSubscribe, hashIsGallery, serverHashIsGallery);
+  const tab: Tab = chosenTab ?? (startsOnGallery ? "gallery" : "create");
   const [logo, setLogo] = useState<LogoAsset | null>(null);
   const [accessoryId, setAccessoryId] = useState<AccessoryId>("hat");
   const [motionId, setMotionId] = useState<MotionId>("jump");
@@ -65,6 +72,13 @@ export function Studio() {
   const uploadGen = useRef(0);
   const reducedMotion = useReducedMotion();
 
+  const landingTracked = useRef(false);
+  useEffect(() => {
+    if (landingTracked.current) return;
+    landingTracked.current = true;
+    trackEvent("landing_view");
+  }, []);
+
   useEffect(() => {
     return () => {
       releaseLogo(logoRef.current);
@@ -72,15 +86,12 @@ export function Studio() {
   }, []);
 
   useEffect(() => {
-    if (window.location.hash === "#gallery") setTab("gallery");
-  }, []);
-
-  useEffect(() => {
+    if (chosenTab === null && hashIsGallery()) return;
     const next = tab === "gallery" ? "#gallery" : "#create";
     if (window.location.hash !== next) {
       window.history.replaceState(null, "", next);
     }
-  }, [tab]);
+  }, [tab, chosenTab]);
 
   const openPicker = () => fileRef.current?.click();
 
@@ -118,6 +129,7 @@ export function Studio() {
         return;
       }
       replaceLogo(next);
+      trackEvent("logo_uploaded");
     } catch (error) {
       if (gen !== uploadGen.current) return;
       setMessage(error instanceof Error ? error.message : "Couldn’t open the logo. Try another file.");
@@ -132,6 +144,7 @@ export function Studio() {
       return;
     }
     setAccessoryId(id);
+    trackEvent("accessory_chosen", { accessory: id });
     if (logo) setTransform(placementFor("onTop", id, logo));
     setPlayId((value) => value + 1);
   };
@@ -145,12 +158,14 @@ export function Studio() {
     if (!logo) return;
     if (kind === "svg") {
       downloadAnimatedSvg(logo, accessoryId, transform, motionId);
+      trackEvent("logo_downloaded", { format: "svg" });
       return;
     }
     setBusy(true);
     try {
       if (kind === "png") await downloadPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
+      trackEvent("logo_downloaded", { format: kind });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Couldn’t download. Try again.");
     } finally {
@@ -159,7 +174,11 @@ export function Studio() {
   };
 
   const motionStyle = useMemo(
-    () => ({ __html: ACCESSORY_MOTION_CSS }),
+    // The preview plays the motion once and rests; it replays when the
+    // accessory or motion changes (PreviewStage remounts on playId).
+    () => ({
+      __html: `${ACCESSORY_MOTION_CSS}\n.xmas-once .xmas-motion { animation-iteration-count: 1; }`,
+    }),
     [],
   );
 
@@ -275,6 +294,11 @@ export function Studio() {
                   );
                 })}
               </div>
+              {logo ? (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Drag the accessory or its handles. Keys: arrows move, + / − resize, [ ] rotate.
+                </p>
+              ) : null}
               {reducedMotion ? (
                 <p className="mt-3 text-sm text-muted-foreground">
                   Animation paused: reduce motion is on in your system.
@@ -282,7 +306,7 @@ export function Studio() {
               ) : null}
             </aside>
 
-            <div className="order-first h-full min-h-[22rem] lg:order-none">
+            <div className="xmas-once order-first h-full min-h-[22rem] lg:order-none">
               {logo ? (
                 <PreviewStage
                   logo={logo}
