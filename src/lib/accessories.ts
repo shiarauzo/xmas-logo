@@ -252,8 +252,10 @@ function elfHatMarkup(p: string): string {
 
 export const ACCESSORY_MOTION_CSS = `
 @keyframes xmas-jump {
-  0%, 100% { transform: translate(0, 0); }
-  40% { transform: translate(0, -22%); }
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(0, -22%) rotate(0deg); }
+  60% { transform: translate(0, -22%) rotate(360deg); }
+  85% { transform: translate(0, 0) rotate(360deg); }
 }
 @keyframes xmas-spin {
   0% { transform: rotate(0deg); }
@@ -277,7 +279,7 @@ export const ACCESSORY_MOTION_CSS = `
 }
 .xmas-jump {
   animation-name: xmas-jump;
-  animation-duration: .85s;
+  animation-duration: 1.4s;
   animation-timing-function: cubic-bezier(.23, 1, .32, 1);
 }
 .xmas-spin {
