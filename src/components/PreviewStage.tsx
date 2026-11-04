@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ACCESSORY_BASE_SIZE, ACCESSORY_BY_ID } from "@/lib/accessories";
-import { clamp, stageInsets } from "@/lib/geometry";
+import { SCALE_MAX, SCALE_MIN, clamp, stageInsets } from "@/lib/geometry";
 import type {
   AccessoryId,
   AccessoryTransform,
@@ -114,7 +114,7 @@ export function PreviewStage({
       if (startDist < 1) return;
       onChangeRef.current({
         ...session.start,
-        scale: clamp(session.start.scale * (dist / startDist), 0.22, 2.4),
+        scale: clamp(session.start.scale * (dist / startDist), SCALE_MIN, SCALE_MAX),
       });
       return;
     }
@@ -193,11 +193,11 @@ export function PreviewStage({
     if (event.key === "ArrowDown") move(0, step);
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
-      onChange({ ...current, scale: clamp(current.scale + 0.04, 0.22, 2.4) });
+      onChange({ ...current, scale: clamp(current.scale + 0.04, SCALE_MIN, SCALE_MAX) });
     }
     if (event.key === "-" || event.key === "_") {
       event.preventDefault();
-      onChange({ ...current, scale: clamp(current.scale - 0.04, 0.22, 2.4) });
+      onChange({ ...current, scale: clamp(current.scale - 0.04, SCALE_MIN, SCALE_MAX) });
     }
     if (event.key === "[") {
       event.preventDefault();
@@ -218,7 +218,7 @@ export function PreviewStage({
       const next = current.scale * (event.deltaY > 0 ? 0.96 : 1.04);
       onChangeRef.current({
         ...current,
-        scale: clamp(next, 0.22, 2.4),
+        scale: clamp(next, SCALE_MIN, SCALE_MAX),
       });
     };
     node.addEventListener("wheel", onWheel, { passive: false });

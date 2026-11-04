@@ -61,3 +61,13 @@ test("sin tinta leída se usa la caja del archivo como antes", () => {
   assert.deepEqual(empty, before);
   assert.equal(before.x, 50);
 });
+
+test("la escala de Encima nunca queda bajo el mínimo del escenario (si no, el primer arrastre salta)", async () => {
+  const { SCALE_MIN, SCALE_MAX } = await import("./geometry.ts");
+  const tiny = logo(1000, 1000, { minX: 450, minY: 450, maxX: 550, maxY: 500 });
+  for (const id of ["hat", "beard", "cane", "elf"] as const) {
+    const t = placementFor("onTop", id, tiny);
+    assert.ok(t.scale >= SCALE_MIN, `${id} ${t.scale}`);
+    assert.ok(t.scale <= SCALE_MAX);
+  }
+});
