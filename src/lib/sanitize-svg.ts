@@ -19,14 +19,14 @@ function isExternalRef(value: string): boolean {
 
 function parseSvg(xml: string): Document {
   if (typeof DOMParser === "undefined") {
-    throw new Error("That SVG is damaged. Try another or export your logo as PNG.");
+    throw new Error("Your browser can't read SVGs here. Try a PNG or another browser.");
   }
   return new DOMParser().parseFromString(xml, "image/svg+xml");
 }
 
 function serializeSvg(doc: Document): string {
   if (typeof XMLSerializer === "undefined") {
-    throw new Error("That SVG is damaged. Try another or export your logo as PNG.");
+    throw new Error("Your browser can't read SVGs here. Try a PNG or another browser.");
   }
   return new XMLSerializer().serializeToString(doc);
 }
