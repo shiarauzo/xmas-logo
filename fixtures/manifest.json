@@ -1,0 +1,233 @@
+[
+  {
+    "file": "wide.svg",
+    "natural": [
+      1000,
+      200
+    ],
+    "ink": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 1000,
+      "maxY": 200
+    },
+    "glyphs": [
+      {
+        "x": 0,
+        "y": 50,
+        "w": 220,
+        "h": 150
+      },
+      {
+        "x": 390,
+        "y": 0,
+        "w": 220,
+        "h": 200
+      },
+      {
+        "x": 780,
+        "y": 50,
+        "w": 220,
+        "h": 150
+      }
+    ]
+  },
+  {
+    "file": "tall.svg",
+    "natural": [
+      200,
+      1000
+    ],
+    "ink": {
+      "minX": 20,
+      "minY": 0,
+      "maxX": 180,
+      "maxY": 1000
+    }
+  },
+  {
+    "file": "padded.svg",
+    "natural": [
+      400,
+      400
+    ],
+    "ink": {
+      "minX": 60,
+      "minY": 220,
+      "maxX": 340,
+      "maxY": 300
+    },
+    "glyphs": [
+      {
+        "x": 60,
+        "y": 240,
+        "w": 61.6,
+        "h": 60
+      },
+      {
+        "x": 169.2,
+        "y": 220,
+        "w": 61.6,
+        "h": 80
+      },
+      {
+        "x": 278.4,
+        "y": 240,
+        "w": 61.6,
+        "h": 60
+      }
+    ]
+  },
+  {
+    "file": "neg-origin.svg",
+    "natural": [
+      1000,
+      600
+    ],
+    "ink": {
+      "minX": 300,
+      "minY": 250,
+      "maxX": 700,
+      "maxY": 350
+    }
+  },
+  {
+    "file": "transforms.svg",
+    "natural": [
+      600,
+      300
+    ],
+    "ink": {
+      "minX": 100,
+      "minY": 150,
+      "maxX": 500,
+      "maxY": 250
+    }
+  },
+  {
+    "file": "text-paths.svg",
+    "natural": [
+      500,
+      200
+    ],
+    "ink": {
+      "minX": 100,
+      "minY": 60,
+      "maxX": 400,
+      "maxY": 160
+    },
+    "glyphs": [
+      {
+        "x": 100,
+        "y": 85,
+        "w": 66,
+        "h": 75
+      },
+      {
+        "x": 217,
+        "y": 60,
+        "w": 66,
+        "h": 100
+      },
+      {
+        "x": 334,
+        "y": 85,
+        "w": 66,
+        "h": 75
+      }
+    ]
+  },
+  {
+    "file": "no-size.svg",
+    "natural": [
+      320,
+      120
+    ],
+    "ink": {
+      "minX": 40,
+      "minY": 30,
+      "maxX": 280,
+      "maxY": 90
+    }
+  },
+  {
+    "file": "size-only.svg",
+    "natural": [
+      300,
+      100
+    ],
+    "ink": {
+      "minX": 30,
+      "minY": 40,
+      "maxX": 270,
+      "maxY": 100
+    }
+  },
+  {
+    "file": "huge-coords.svg",
+    "natural": [
+      1000000,
+      250000
+    ],
+    "ink": {
+      "minX": 100000,
+      "minY": 50000,
+      "maxX": 900000,
+      "maxY": 250000
+    }
+  },
+  {
+    "file": "tiny16.png",
+    "natural": [
+      16,
+      16
+    ],
+    "ink": {
+      "minX": 0,
+      "minY": 0,
+      "maxX": 16,
+      "maxY": 16
+    }
+  },
+  {
+    "file": "transparent.png",
+    "natural": [
+      400,
+      400
+    ],
+    "ink": {
+      "minX": 120,
+      "minY": 200,
+      "maxX": 280,
+      "maxY": 300
+    }
+  },
+  {
+    "file": "big4000.png",
+    "natural": [
+      4000,
+      2000
+    ],
+    "ink": {
+      "minX": 0,
+      "minY": 400,
+      "maxX": 4000,
+      "maxY": 2000
+    },
+    "big": true
+  },
+  {
+    "file": "big.svg",
+    "natural": [
+      1200,
+      500
+    ],
+    "ink": {
+      "minX": 0,
+      "minY": 100,
+      "maxX": 1200,
+      "maxY": 400
+    },
+    "big": true
+  }
+]
