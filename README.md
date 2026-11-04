@@ -11,7 +11,7 @@ It all runs in the browser. No upload server, no accounts.
 - Drag, resize, and rotate it on the logo
 - Pick a motion: jump, spin, sway, bounce
 - Download a GIF, PNG, or SVG
-- Browse official-logo examples in Gallery
+- Browse example logos in Gallery
 
 SVGs are cleaned with DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`). Scripts, `foreignObject`, external `use`, and `href` / `xlink:href` pointing at other pages or files are stripped. On screen the logo is an `<img>` from a local blob, never injected raw.
 
@@ -39,4 +39,4 @@ Import this repo in Vercel. The framework is Next.js. Build command is `npm run 
 
 ## License
 
-MIT. See `LICENSE`. Example logos are trademarks of their owners.
+MIT. See `LICENSE`. Example logos are fictional brands made for this project.
