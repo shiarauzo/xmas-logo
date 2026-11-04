@@ -1,5 +1,6 @@
+import { analyzeInk, inkSampleSize, stageTone } from "./ink";
 import { ensureSvgSize, sanitizeSvg } from "./sanitize-svg";
-import type { LogoAsset } from "./types";
+import type { LogoAsset, LogoInk } from "./types";
 
 const RASTER_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 
@@ -26,17 +27,57 @@ async function readAsDataUrl(file: Blob): Promise<string> {
   });
 }
 
-function measureImage(src: string): Promise<{ width: number; height: number }> {
+type Measured = { width: number; height: number; image: HTMLImageElement };
+
+function measureImage(src: string): Promise<Measured> {
   return new Promise((resolve, reject) => {
     const image = new Image();
     image.onload = () =>
       resolve({
         width: image.naturalWidth || 800,
         height: image.naturalHeight || 800,
+        image,
       });
     image.onerror = () => reject(new Error("Couldn’t open the logo."));
     image.src = src;
   });
+}
+
+function sampleContext(width: number, height: number) {
+  if (typeof OffscreenCanvas !== "undefined") {
+    return new OffscreenCanvas(width, height).getContext("2d", {
+      willReadFrequently: true,
+    });
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  return canvas.getContext("2d", { willReadFrequently: true });
+}
+
+/** Reads the visible pixels from a small copy of the logo. */
+export function readInk(measured: Measured): LogoInk | undefined {
+  try {
+    const sample = inkSampleSize(measured.width, measured.height);
+    const ctx = sampleContext(sample.width, sample.height);
+    if (!ctx) return undefined;
+    ctx.drawImage(measured.image, 0, 0, sample.width, sample.height);
+    const pixels = ctx.getImageData(0, 0, sample.width, sample.height).data;
+    const ink = analyzeInk(pixels, sample.width, sample.height);
+    const sx = measured.width / sample.width;
+    const sy = measured.height / sample.height;
+    return {
+      box: ink.box && {
+        minX: ink.box.minX * sx,
+        minY: ink.box.minY * sy,
+        maxX: ink.box.maxX * sx,
+        maxY: ink.box.maxY * sy,
+      },
+      tone: stageTone(ink.luminance),
+    };
+  } catch {
+    return undefined;
+  }
 }
 
 export async function logoFromSvgText(
@@ -56,6 +97,7 @@ export async function logoFromSvgText(
       sanitizedSvg: sized.svg,
       naturalWidth: measured.width || sized.width,
       naturalHeight: measured.height || sized.height,
+      ink: readInk(measured),
     };
   } catch (error) {
     revokeIfNeeded(objectUrl);
@@ -84,6 +126,7 @@ export async function logoFromFile(file: File): Promise<LogoAsset> {
       dataUrl,
       naturalWidth: measured.width,
       naturalHeight: measured.height,
+      ink: readInk(measured),
     };
   } catch (error) {
     revokeIfNeeded(objectUrl);
