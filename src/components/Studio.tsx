@@ -169,11 +169,11 @@ export function Studio() {
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
         <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="min-w-0 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
-            Xmastize your logo
+            Logo navideño
           </h1>
           <div
             role="tablist"
-            aria-label="Studio"
+            aria-label="Secciones"
             className="flex h-11 items-center rounded-lg bg-secondary p-1"
           >
             {(["create", "gallery"] as const).map((id) => (
@@ -189,7 +189,7 @@ export function Studio() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {id}
+                {id === "create" ? "Crear" : "Galería"}
               </button>
             ))}
           </div>
@@ -200,7 +200,7 @@ export function Studio() {
               accept="image/svg+xml,image/png,image/jpeg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
               className="sr-only"
               tabIndex={-1}
-              aria-label="Upload"
+              aria-label="Subir logo"
               onChange={(event) => {
                 void onUpload(event.target.files?.[0]);
                 event.currentTarget.value = "";
@@ -208,7 +208,7 @@ export function Studio() {
             />
             <button
               type="button"
-              aria-label="Upload"
+              aria-label="Subir logo"
               onClick={openPicker}
               className={`inline-flex size-11 items-center justify-center rounded-md border border-border bg-background hover:bg-accent hover:text-accent-foreground ${press} ${focusRing}`}
             >
