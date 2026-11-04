@@ -67,6 +67,7 @@ export function Studio() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [stageFocused, setStageFocused] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<LogoAsset | null>(null);
   const uploadGen = useRef(0);
@@ -294,7 +295,7 @@ export function Studio() {
                   );
                 })}
               </div>
-              {logo ? (
+              {logo && stageFocused ? (
                 <p className="mt-3 text-sm text-muted-foreground">
                   Drag the accessory or its handles. Keys: arrows move, + / − resize, [ ] rotate.
                 </p>
@@ -306,7 +307,15 @@ export function Studio() {
               ) : null}
             </aside>
 
-            <div className="xmas-once h-full min-h-[22rem]">
+            <div
+              className="xmas-once h-full min-h-[22rem]"
+              onFocus={() => setStageFocused(true)}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setStageFocused(false);
+                }
+              }}
+            >
               {logo ? (
                 <PreviewStage
                   logo={logo}
