@@ -296,7 +296,6 @@ export function Studio() {
               ) : (
                 <button
                   type="button"
-                  aria-label="Upload"
                   onClick={openPicker}
                   onDragOver={onDragOver}
                   onDragLeave={onDragLeave}
@@ -307,7 +306,11 @@ export function Studio() {
                       ? "border-foreground bg-accent"
                       : "border-border bg-muted/20"
                   }`}
-                />
+                >
+                  <span className="text-sm text-muted-foreground">
+                    Arrastra tu logo aquí o haz clic para subirlo (SVG o PNG)
+                  </span>
+                </button>
               )}
             </div>
           </div>

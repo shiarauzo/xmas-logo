@@ -261,7 +261,7 @@ export function PreviewStage({
           ref={accessoryRef}
           data-accessory
           tabIndex={0}
-          aria-label="Accesorio: arrastra para mover, usa las flechas y + o −"
+          aria-label="Accesorio: arrástralo o usa las flechas y las teclas + y −"
           className="absolute cursor-grab touch-none select-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:cursor-grabbing"
           style={{
             left: `${transform.x}%`,
