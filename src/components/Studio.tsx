@@ -307,7 +307,7 @@ export function Studio() {
                       : "border-border bg-muted/20"
                   }`}
                 >
-                  <span className="text-sm text-muted-foreground">Drop your logo here or click to upload (SVG or PNG)</span>
+                  <span className="text-sm text-muted-foreground">Drop your logo here or click to upload <span className="whitespace-nowrap">(SVG, PNG, JPG or WebP)</span></span>
                 </button>
               )}
             </div>
