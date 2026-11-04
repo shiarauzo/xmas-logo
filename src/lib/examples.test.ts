@@ -3,8 +3,8 @@ import { existsSync } from "node:fs";
 import { test } from "node:test";
 import { EXAMPLES, exampleTransform, placementOnLogo } from "./examples.ts";
 
-test("the gallery has twenty official logos on disk", () => {
-  assert.equal(EXAMPLES.length, 20);
+test("the gallery has twelve fictional logos on disk", () => {
+  assert.equal(EXAMPLES.length, 12);
   for (const item of EXAMPLES) {
     assert.ok(item.src.startsWith("/examples/"), item.id);
     assert.ok(
@@ -15,18 +15,18 @@ test("the gallery has twenty official logos on disk", () => {
 });
 
 test("the hat sits on the logo, not above the card", () => {
-  const vercel = EXAMPLES.find((item) => item.id === "vercel");
-  assert.ok(vercel);
-  const hat = exampleTransform(vercel);
+  const nido = EXAMPLES.find((item) => item.id === "nido");
+  assert.ok(nido);
+  const hat = exampleTransform(nido);
   assert.ok(hat.x < 20);
   assert.ok(hat.y < 40);
-  const apple = placementOnLogo("hat", 256, 315);
-  assert.ok(Math.abs(apple.x - 50) < 1);
+  const square = placementOnLogo("hat", 256, 256);
+  assert.ok(Math.abs(square.x - 50) < 1);
 });
 
 test("the cane hooks the last letter of a wide wordmark", () => {
-  const netflix = EXAMPLES.find((item) => item.id === "netflix");
-  assert.ok(netflix);
-  const cane = exampleTransform(netflix);
+  const quena = EXAMPLES.find((item) => item.id === "quena");
+  assert.ok(quena);
+  const cane = exampleTransform(quena);
   assert.ok(cane.x > 80);
 });
