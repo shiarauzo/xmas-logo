@@ -145,9 +145,12 @@ export function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+// Browsers refuse canvases much past 16k px a side; 8192 is safe everywhere.
+export const PNG_MAX_SIDE = 8192;
+
 export function exportRasterScale(viewWidth: number, viewHeight: number) {
   const longest = Math.max(viewWidth, viewHeight, 1);
-  return Math.min(8, Math.max(1, 800 / longest));
+  return Math.min(8, Math.max(1, 800 / longest), PNG_MAX_SIDE / longest);
 }
 
 export const GIF_MAX_SIDE = 800;
