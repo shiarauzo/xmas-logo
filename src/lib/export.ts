@@ -3,7 +3,12 @@ import {
   ACCESSORY_MOTION_CSS,
   accessoryMarkup,
 } from "./accessories";
-import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
+import {
+  accessorySize,
+  exportRasterScale,
+  exportViewBox,
+  gifRasterScale,
+} from "./geometry";
 import { motionOffset } from "./motion";
 import { prefixSvgIds } from "./sanitize-svg";
 import type {
@@ -137,7 +142,7 @@ export async function downloadGif(
     accessoryId,
     transform,
   );
-  const scale = exportRasterScale(view.width, view.height);
+  const scale = gifRasterScale(view.width, view.height);
   const width = Math.max(1, Math.round(view.width * scale));
   const height = Math.max(1, Math.round(view.height * scale));
   const frames = 12;
