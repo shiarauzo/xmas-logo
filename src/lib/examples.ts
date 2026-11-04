@@ -13,26 +13,18 @@ export type ExampleLogo = {
 };
 
 export const EXAMPLES: ExampleLogo[] = [
-  { id: "cloudflare", name: "Cloudflare", src: "/examples/cloudflare.svg", width: 512, height: 76, accessory: "elf", pin: { x: 6 } },
-  { id: "vercel", name: "Vercel", src: "/examples/vercel.svg", width: 512, height: 103, accessory: "hat", pin: { x: 8 } },
-  { id: "apple", name: "Apple", src: "/examples/apple.svg", width: 256, height: 315, accessory: "hat" },
-  { id: "nintendo", name: "Nintendo", src: "/examples/nintendo.svg", width: 600, height: 200, accessory: "cane", pin: { x: 94 } },
-  { id: "logitech", name: "Logitech", src: "/examples/logitech.svg", width: 1000, height: 304, accessory: "elf", pin: { x: 8 } },
-  { id: "amazon", name: "Amazon", src: "/examples/amazon.svg", width: 603, height: 182, accessory: "beard", pin: { x: 10 } },
-  { id: "google", name: "Google", src: "/examples/google.svg", width: 512, height: 168, accessory: "hat", pin: { x: 9 } },
-  { id: "microsoft", name: "Microsoft", src: "/examples/microsoft.svg", width: 512, height: 110, accessory: "hat", pin: { x: 8 } },
-  { id: "meta", name: "Meta", src: "/examples/meta.svg", width: 512, height: 104, accessory: "elf", pin: { x: 8 } },
-  { id: "netflix", name: "Netflix", src: "/examples/netflix.svg", width: 512, height: 138, accessory: "cane", pin: { x: 95 } },
-  { id: "spotify", name: "Spotify", src: "/examples/spotify.svg", width: 512, height: 160, accessory: "elf", pin: { x: 10 } },
-  { id: "tesla", name: "Tesla", src: "/examples/tesla.svg", width: 255, height: 254, accessory: "cane", pin: { x: 92, y: 36 } },
-  { id: "stripe", name: "Stripe", src: "/examples/stripe.svg", width: 512, height: 214, accessory: "hat", pin: { x: 10 } },
-  { id: "shopify", name: "Shopify", src: "/examples/shopify.svg", width: 612, height: 192, accessory: "elf", pin: { x: 10 } },
-  { id: "airbnb", name: "Airbnb", src: "/examples/airbnb.svg", width: 512, height: 161, accessory: "beard", pin: { x: 10, y: 90 } },
-  { id: "slack", name: "Slack", src: "/examples/slack.svg", width: 512, height: 130, accessory: "beard", pin: { x: 10 } },
-  { id: "figma", name: "Figma", src: "/examples/figma.svg", width: 256, height: 384, accessory: "hat" },
-  { id: "github", name: "GitHub", src: "/examples/github.svg", width: 512, height: 139, accessory: "beard", pin: { x: 10 } },
-  { id: "nvidia", name: "NVIDIA", src: "/examples/nvidia.svg", width: 512, height: 98, accessory: "hat", pin: { x: 8 } },
-  { id: "openai", name: "OpenAI", src: "/examples/openai.svg", width: 512, height: 126, accessory: "cane", pin: { x: 94 } },
+  { id: "nido", name: "Nido", src: "/examples/nido.svg", width: 512, height: 120, accessory: "hat", pin: { x: 11.7, y: -21.5, scale: 0.5 } },
+  { id: "pino", name: "Pino", src: "/examples/pino.svg", width: 256, height: 320, accessory: "hat" },
+  { id: "kora", name: "Kora", src: "/examples/kora.svg", width: 512, height: 104, accessory: "cane", pin: { x: 95 } },
+  { id: "olivo", name: "Olivo", src: "/examples/olivo.svg", width: 512, height: 140, accessory: "elf", pin: { x: 33.2, y: -11.2, scale: 0.45 } },
+  { id: "lumo", name: "Lumo", src: "/examples/lumo.svg", width: 256, height: 256, accessory: "hat" },
+  { id: "brisa", name: "Brisa", src: "/examples/brisa.svg", width: 600, height: 150, accessory: "beard", pin: { x: 52, y: 88, scale: 0.45 } },
+  { id: "taller", name: "Taller", src: "/examples/taller.svg", width: 512, height: 160, accessory: "elf", pin: { x: 11.7, y: -29.2, scale: 0.5 } },
+  { id: "faro", name: "Faro", src: "/examples/faro.svg", width: 220, height: 360, accessory: "hat" },
+  { id: "quena", name: "Quena", src: "/examples/quena.svg", width: 600, height: 200, accessory: "cane", pin: { x: 89, y: 38, scale: 0.42 } },
+  { id: "tumi", name: "Tumi", src: "/examples/tumi.svg", width: 512, height: 512, accessory: "beard" },
+  { id: "selva", name: "Selva", src: "/examples/selva.svg", width: 512, height: 98, accessory: "hat", pin: { x: 8 } },
+  { id: "cobre", name: "Cobre", src: "/examples/cobre.svg", width: 512, height: 140, accessory: "elf", pin: { x: 39.1, y: -28.3, scale: 0.45 } },
 ];
 
 export function isWideLogo(width: number, height: number) {
