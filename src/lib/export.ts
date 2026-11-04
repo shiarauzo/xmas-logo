@@ -3,6 +3,7 @@ import {
   ACCESSORY_MOTION_CSS,
   accessoryMarkup,
 } from "./accessories";
+import { shareFile } from "./share";
 import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
 import { motionOffset } from "./motion";
 import { prefixSvgIds } from "./sanitize-svg";
@@ -118,7 +119,8 @@ export async function downloadPng(
         "image/png",
       );
     });
-    downloadBlob(png, "xmastize-logo.png");
+    const file = new File([png], "xmastize-logo.png", { type: "image/png" });
+    if (!(await shareFile(file))) downloadBlob(png, file.name);
   } finally {
     URL.revokeObjectURL(url);
   }
