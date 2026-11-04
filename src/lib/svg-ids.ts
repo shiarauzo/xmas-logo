@@ -31,8 +31,10 @@ export function prefixSvgIds(svg: string, prefix: string): string {
 
   const rewrite = (value: string) =>
     value
-      .replace(/url\(#([^)]+)\)/g, (_, id: string) =>
-        ids.has(id) ? `url(#${ids.get(id)})` : `url(#${id})`,
+      .replace(
+        /url\(\s*(['"]?)#([^'")\s]+)\1\s*\)/g,
+        (match, quote: string, id: string) =>
+          ids.has(id) ? `url(${quote}#${ids.get(id)}${quote})` : match,
       )
       .replace(/^#(.+)$/, (_, id: string) =>
         ids.has(id) ? `#${ids.get(id)}` : `#${id}`,
@@ -51,8 +53,13 @@ export function prefixSvgIds(svg: string, prefix: string): string {
         rewrite(nsHref),
       );
     }
-    const style = el.getAttribute("style");
-    if (style?.includes("url(#")) el.setAttribute("style", rewrite(style));
+    // fill, stroke, clip-path, mask, filter, marker-*, and style all point
+    // at gradients and friends with url(#id).
+    for (const attr of Array.from(el.attributes)) {
+      if (attr.name === "id" || !/url\(/.test(attr.value)) continue;
+      const next = rewrite(attr.value);
+      if (next !== attr.value) el.setAttribute(attr.name, next);
+    }
   }
 
   return serializeSvg(doc);
