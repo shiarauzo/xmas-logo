@@ -7,6 +7,7 @@ import {
   MOTIONS,
   placementFor,
 } from "@/lib/accessories";
+import { trackEvent } from "@/lib/analytics";
 import { downloadAnimatedSvg, downloadGif, downloadPng } from "@/lib/export";
 import { logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
@@ -71,6 +72,13 @@ export function Studio() {
   const uploadGen = useRef(0);
   const reducedMotion = useReducedMotion();
 
+  const landingTracked = useRef(false);
+  useEffect(() => {
+    if (landingTracked.current) return;
+    landingTracked.current = true;
+    trackEvent("landing_view");
+  }, []);
+
   useEffect(() => {
     return () => {
       releaseLogo(logoRef.current);
@@ -121,6 +129,7 @@ export function Studio() {
         return;
       }
       replaceLogo(next);
+      trackEvent("logo_uploaded");
     } catch (error) {
       if (gen !== uploadGen.current) return;
       setMessage(error instanceof Error ? error.message : "Couldn’t open the logo. Try another file.");
@@ -135,6 +144,7 @@ export function Studio() {
       return;
     }
     setAccessoryId(id);
+    trackEvent("accessory_chosen", { accessory: id });
     if (logo) setTransform(placementFor("onTop", id, logo));
     setPlayId((value) => value + 1);
   };
@@ -148,12 +158,14 @@ export function Studio() {
     if (!logo) return;
     if (kind === "svg") {
       downloadAnimatedSvg(logo, accessoryId, transform, motionId);
+      trackEvent("logo_downloaded", { format: "svg" });
       return;
     }
     setBusy(true);
     try {
       if (kind === "png") await downloadPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
+      trackEvent("logo_downloaded", { format: kind });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Couldn’t download. Try again.");
     } finally {
