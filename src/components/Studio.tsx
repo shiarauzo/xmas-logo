@@ -110,7 +110,7 @@ export function Studio() {
     if (!file) return;
     const gen = (uploadGen.current += 1);
     setBusy(true);
-    setMessage("Reading…");
+    setMessage("Loading logo…");
     try {
       const next = await logoFromFile(file);
       if (gen !== uploadGen.current) {
