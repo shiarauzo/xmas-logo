@@ -8,8 +8,13 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Xmastize your logo",
-  description: "Drop a Christmas accessory on your logo.",
+  title: "Logo navideño",
+  description: "Ponle un gorro de Navidad animado a tu logo y descárgalo.",
+  openGraph: {
+    title: "Logo navideño",
+    description: "Ponle un gorro de Navidad animado a tu logo y descárgalo.",
+    locale: "es_ES",
+  },
   icons: {
     icon: "/favicon.svg",
   },
@@ -22,7 +27,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geist.variable} dark h-full antialiased`}>
+    <html lang="es" className={`${geist.variable} dark h-full antialiased`}>
       <body className="min-h-dvh bg-background font-sans text-foreground">
         {children}
       </body>
