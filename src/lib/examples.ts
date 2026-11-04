@@ -21,7 +21,7 @@ export const EXAMPLES: ExampleLogo[] = [
   { id: "brisa", name: "Brisa", src: "/examples/brisa.svg", width: 600, height: 150, accessory: "beard", pin: { x: 52, y: 88, scale: 0.45 } },
   { id: "taller", name: "Taller", src: "/examples/taller.svg", width: 512, height: 160, accessory: "elf", pin: { x: 11.7, y: -29.2, scale: 0.5 } },
   { id: "faro", name: "Faro", src: "/examples/faro.svg", width: 220, height: 360, accessory: "hat" },
-  { id: "quena", name: "Quena", src: "/examples/quena.svg", width: 600, height: 200, accessory: "cane", pin: { x: 94 } },
+  { id: "quena", name: "Quena", src: "/examples/quena.svg", width: 600, height: 200, accessory: "cane", pin: { x: 89, y: 38, scale: 0.42 } },
   { id: "tumi", name: "Tumi", src: "/examples/tumi.svg", width: 512, height: 512, accessory: "beard" },
   { id: "selva", name: "Selva", src: "/examples/selva.svg", width: 512, height: 98, accessory: "hat", pin: { x: 8 } },
   { id: "cobre", name: "Cobre", src: "/examples/cobre.svg", width: 512, height: 140, accessory: "elf", pin: { x: 39.1, y: -28.3, scale: 0.45 } },
