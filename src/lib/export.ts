@@ -8,8 +8,9 @@ import {
   exportRasterScale,
   exportViewBox,
   gifRasterScale,
+  motionExportViewBox,
 } from "./geometry";
-import { motionOffset } from "./motion";
+import { gifFrames, motionOffset, motionTransform, type MotionFrame } from "./motion";
 import { prefixSvgIds } from "./sanitize-svg";
 import type {
   AccessoryId,
@@ -39,7 +40,11 @@ export function buildExportSvg(
   );
   const tx = (transform.x / 100) * width;
   const ty = (transform.y / 100) * height;
-  const view = exportViewBox(width, height, accessoryId, transform);
+  // Animated output and GIF layers make room for the whole motion.
+  const view =
+    animated || layers !== "all"
+      ? motionExportViewBox(width, height, accessoryId, transform, motionId)
+      : exportViewBox(width, height, accessoryId, transform);
 
   let logoLayer = "";
   if (layers === "accessory") {
@@ -139,31 +144,31 @@ export async function downloadGif(
   motionId: MotionId,
 ) {
   const { GIFEncoder, applyPalette, quantize } = await import("gifenc");
-  const view = exportViewBox(
+  const view = motionExportViewBox(
     logo.naturalWidth || 800,
     logo.naturalHeight || 800,
     accessoryId,
     transform,
+    motionId,
   );
   const scale = gifRasterScale(view.width, view.height);
   const width = Math.max(1, Math.round(view.width * scale));
   const height = Math.max(1, Math.round(view.height * scale));
-  const frames = 12;
   const gif = GIFEncoder();
   let palette: number[][] | undefined;
+  let transparentIndex = -1;
 
   // The logo is the heavy part (big SVGs, 4000 px PNGs). Draw it once and
-  // only redraw the accessory on each frame.
+  // only redraw the accessory on each frame. No fill: the GIF keeps the
+  // transparent background, like the PNG and the preview.
   const base = document.createElement("canvas");
   base.width = width;
   base.height = height;
   const baseCtx = base.getContext("2d");
   if (!baseCtx) throw new Error("Couldn’t create the image. Try again.");
-  baseCtx.fillStyle = "#ffffff";
-  baseCtx.fillRect(0, 0, width, height);
   await drawSvg(
     baseCtx,
-    buildExportSvg(logo, accessoryId, transform, "jump", false, "logo"),
+    buildExportSvg(logo, accessoryId, transform, motionId, false, "logo"),
     width,
     height,
   );
@@ -174,19 +179,31 @@ export async function downloadGif(
   const ctx = canvas.getContext("2d", { willReadFrequently: true });
   if (!ctx) throw new Error("Couldn’t create the image. Try again.");
 
-  for (let i = 0; i < frames; i += 1) {
-    const mot = motionOffset(motionId, i / frames);
-    const framed = buildFrameSvg(logo, accessoryId, transform, mot);
+  for (const { t, delay } of gifFrames(motionId)) {
+    const framed = buildFrameSvg(
+      logo,
+      accessoryId,
+      transform,
+      motionId,
+      motionOffset(motionId, t),
+    );
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(base, 0, 0);
     await drawSvg(ctx, framed, width, height);
     const pixels = ctx.getImageData(0, 0, width, height).data;
-    palette ??= quantize(pixels, 256);
-    const index = applyPalette(pixels, palette);
+    if (!palette) {
+      palette = quantize(pixels, 256, { format: "rgba4444", oneBitAlpha: true });
+      transparentIndex = palette.findIndex((color) => color[3] === 0);
+    }
+    const index = applyPalette(pixels, palette, "rgba4444");
     gif.writeFrame(index, width, height, {
       palette,
-      delay: 80,
+      delay,
       repeat: 0,
+      transparent: transparentIndex >= 0,
+      transparentIndex: Math.max(0, transparentIndex),
+      // Clear each frame so the moving accessory leaves no trail.
+      dispose: 2,
     });
   }
 
@@ -201,19 +218,26 @@ function buildFrameSvg(
   logo: LogoAsset,
   accessoryId: AccessoryId,
   transform: AccessoryTransform,
-  mot: ReturnType<typeof motionOffset>,
+  motionId: MotionId,
+  frame: MotionFrame,
 ) {
   const raw = buildExportSvg(
     logo,
     accessoryId,
     transform,
-    "jump",
+    motionId,
     false,
     "accessory",
   );
+  const { width, height } = accessorySize(
+    accessoryId,
+    transform.scale,
+    logo.naturalWidth || 800,
+  );
+  const motion = motionTransform(accessoryId, frame, width, height);
   return raw.replace(
     /<g id="accessory" transform="([^"]+)">/,
-    `<g id="accessory" transform="$1 translate(0 ${(mot.dy / 100) * 48}) rotate(${mot.rot}) scale(${mot.sx} ${mot.sy})">`,
+    `<g id="accessory" transform="$1 ${motion}">`,
   );
 }
 
