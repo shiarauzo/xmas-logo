@@ -13,18 +13,18 @@ export type ExampleLogo = {
 };
 
 export const EXAMPLES: ExampleLogo[] = [
-  { id: "nido", name: "Nido", src: "/examples/nido.svg", width: 512, height: 120, accessory: "hat", pin: { x: 12, y: -18, scale: 0.6 } },
+  { id: "nido", name: "Nido", src: "/examples/nido.svg", width: 512, height: 120, accessory: "hat", pin: { x: 11.7, y: -21.5, scale: 0.5 } },
   { id: "pino", name: "Pino", src: "/examples/pino.svg", width: 256, height: 320, accessory: "hat" },
   { id: "kora", name: "Kora", src: "/examples/kora.svg", width: 512, height: 104, accessory: "cane", pin: { x: 95 } },
-  { id: "olivo", name: "Olivo", src: "/examples/olivo.svg", width: 512, height: 140, accessory: "elf", pin: { x: 12, y: -16, scale: 0.55 } },
+  { id: "olivo", name: "Olivo", src: "/examples/olivo.svg", width: 512, height: 140, accessory: "elf", pin: { x: 33.2, y: -11.2, scale: 0.45 } },
   { id: "lumo", name: "Lumo", src: "/examples/lumo.svg", width: 256, height: 256, accessory: "hat" },
   { id: "brisa", name: "Brisa", src: "/examples/brisa.svg", width: 600, height: 150, accessory: "beard", pin: { x: 52, y: 88, scale: 0.45 } },
-  { id: "taller", name: "Taller", src: "/examples/taller.svg", width: 512, height: 160, accessory: "elf", pin: { x: 10, y: -8, scale: 0.6 } },
+  { id: "taller", name: "Taller", src: "/examples/taller.svg", width: 512, height: 160, accessory: "elf", pin: { x: 11.7, y: -29.2, scale: 0.5 } },
   { id: "faro", name: "Faro", src: "/examples/faro.svg", width: 220, height: 360, accessory: "hat" },
   { id: "quena", name: "Quena", src: "/examples/quena.svg", width: 600, height: 200, accessory: "cane", pin: { x: 94 } },
   { id: "tumi", name: "Tumi", src: "/examples/tumi.svg", width: 512, height: 512, accessory: "beard" },
   { id: "selva", name: "Selva", src: "/examples/selva.svg", width: 512, height: 98, accessory: "hat", pin: { x: 8 } },
-  { id: "cobre", name: "Cobre", src: "/examples/cobre.svg", width: 512, height: 140, accessory: "elf", pin: { x: 10, y: -14, scale: 0.55 } },
+  { id: "cobre", name: "Cobre", src: "/examples/cobre.svg", width: 512, height: 140, accessory: "elf", pin: { x: 39.1, y: -28.3, scale: 0.45 } },
 ];
 
 export function isWideLogo(width: number, height: number) {
