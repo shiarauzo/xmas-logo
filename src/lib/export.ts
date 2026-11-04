@@ -5,7 +5,7 @@ import {
 } from "./accessories";
 import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
 import { motionOffset } from "./motion";
-import { prefixSvgIds } from "./sanitize-svg";
+import { prefixSvgIds } from "./svg-ids";
 import type {
   AccessoryId,
   AccessoryTransform,
