@@ -173,7 +173,7 @@ export function Studio() {
           </h1>
           <div
             role="tablist"
-            aria-label="Studio"
+            aria-label="Sections"
             className="flex h-11 items-center rounded-lg bg-secondary p-1"
           >
             {(["create", "gallery"] as const).map((id) => (
@@ -200,7 +200,7 @@ export function Studio() {
               accept="image/svg+xml,image/png,image/jpeg,image/webp,.svg,.png,.jpg,.jpeg,.webp"
               className="sr-only"
               tabIndex={-1}
-              aria-label="Upload"
+              aria-label="Upload logo"
               onChange={(event) => {
                 void onUpload(event.target.files?.[0]);
                 event.currentTarget.value = "";
@@ -208,7 +208,7 @@ export function Studio() {
             />
             <button
               type="button"
-              aria-label="Upload"
+              aria-label="Upload logo"
               onClick={openPicker}
               className={`inline-flex size-11 items-center justify-center rounded-md border border-border bg-background hover:bg-accent hover:text-accent-foreground ${press} ${focusRing}`}
             >
@@ -296,7 +296,7 @@ export function Studio() {
               ) : (
                 <button
                   type="button"
-                  aria-label="Upload"
+                  aria-label="Upload logo"
                   onClick={openPicker}
                   onDragOver={onDragOver}
                   onDragLeave={onDragLeave}
@@ -307,7 +307,9 @@ export function Studio() {
                       ? "border-foreground bg-accent"
                       : "border-border bg-muted/20"
                   }`}
-                />
+                >
+                  <span className="text-sm text-muted-foreground">Drop your logo here or click to upload (SVG or PNG)</span>
+                </button>
               )}
             </div>
           </div>
