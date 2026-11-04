@@ -18,7 +18,7 @@ export const EXAMPLES: ExampleLogo[] = [
   { id: "kora", name: "Kora", src: "/examples/kora.svg", width: 512, height: 104, accessory: "cane", pin: { x: 95 } },
   { id: "olivo", name: "Olivo", src: "/examples/olivo.svg", width: 512, height: 140, accessory: "elf", pin: { x: 12, y: -16, scale: 0.55 } },
   { id: "lumo", name: "Lumo", src: "/examples/lumo.svg", width: 256, height: 256, accessory: "hat" },
-  { id: "brisa", name: "Brisa", src: "/examples/brisa.svg", width: 600, height: 150, accessory: "beard", pin: { x: 10 } },
+  { id: "brisa", name: "Brisa", src: "/examples/brisa.svg", width: 600, height: 150, accessory: "beard", pin: { x: 52, y: 88, scale: 0.45 } },
   { id: "taller", name: "Taller", src: "/examples/taller.svg", width: 512, height: 160, accessory: "elf", pin: { x: 10, y: -8, scale: 0.6 } },
   { id: "faro", name: "Faro", src: "/examples/faro.svg", width: 220, height: 360, accessory: "hat" },
   { id: "quena", name: "Quena", src: "/examples/quena.svg", width: 600, height: 200, accessory: "cane", pin: { x: 94 } },
