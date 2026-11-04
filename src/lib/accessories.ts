@@ -77,10 +77,18 @@ function accessoryHeightPct(
   return scale * ACCESSORY_BASE_SIZE * 100 * (vbH / vbW) * aspect;
 }
 
+type PlacementLogo = {
+  naturalWidth: number;
+  naturalHeight: number;
+  ink?: {
+    box: { minX: number; minY: number; maxX: number; maxY: number } | null;
+  };
+};
+
 export function placementFor(
   preset: PlacementPreset,
   id: AccessoryId,
-  logo: { naturalWidth: number; naturalHeight: number },
+  logo: PlacementLogo,
 ): AccessoryTransform {
   const aspect = logo.naturalWidth / Math.max(logo.naturalHeight, 1);
 
@@ -103,19 +111,44 @@ export function placementFor(
     };
   }
 
-  const scale = id === "cane" ? 0.4 : 0.48;
+  // Seat on the visible pixels, not the file box. Without them, the file
+  // box is the ink.
+  const w = Math.max(logo.naturalWidth, 1);
+  const h = Math.max(logo.naturalHeight, 1);
+  const box = logo.ink?.box ?? { minX: 0, minY: 0, maxX: w, maxY: h };
+  const inkLeft = (box.minX / w) * 100;
+  const inkTop = (box.minY / h) * 100;
+  const inkWidth = ((box.maxX - box.minX) / w) * 100;
+  const inkHeight = ((box.maxY - box.minY) / h) * 100;
+  const inkCenter = inkLeft + inkWidth / 2;
+  // Sizes are relative to the ink width, so a padded file gets the same
+  // accessory as a tight one.
+  const fit = inkWidth / 100;
+  const scale = (id === "cane" ? 0.4 : 0.48) * fit;
   const heightPct = accessoryHeightPct(id, scale, aspect);
-  const sit = 12;
+  const sit = (12 * inkHeight) / 100;
 
   if (id === "beard") {
-    return { x: 50, y: 100 + heightPct / 2 - 7, scale: 0.52, rotation: 0 };
+    const beardScale = 0.52 * fit;
+    const beardHeight = accessoryHeightPct(id, beardScale, aspect);
+    return {
+      x: inkCenter,
+      y: inkTop + inkHeight + beardHeight / 2 - (7 * inkHeight) / 100,
+      scale: beardScale,
+      rotation: 0,
+    };
   }
   if (id === "cane") {
-    return { x: 93, y: sit - heightPct / 2, scale, rotation: 10 };
+    return {
+      x: inkLeft + inkWidth * 0.93,
+      y: inkTop + sit - heightPct / 2,
+      scale,
+      rotation: 10,
+    };
   }
   return {
-    x: 50,
-    y: sit - heightPct / 2,
+    x: inkCenter,
+    y: inkTop + sit - heightPct / 2,
     scale,
     rotation: id === "elf" ? 8 : -8,
   };
