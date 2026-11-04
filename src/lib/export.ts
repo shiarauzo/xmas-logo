@@ -12,7 +12,7 @@ import {
   motionExportViewBox,
 } from "./geometry";
 import { gifFrames, motionOffset, motionTransform, type MotionFrame } from "./motion";
-import { prefixSvgIds } from "./sanitize-svg";
+import { prefixSvgIds } from "./svg-ids";
 import type {
   AccessoryId,
   AccessoryTransform,

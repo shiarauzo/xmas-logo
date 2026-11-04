@@ -1,5 +1,4 @@
 import { analyzeInk, inkSampleSize, stageTone } from "./ink";
-import { ensureSvgSize, sanitizeSvg } from "./sanitize-svg";
 import type { LogoAsset, LogoInk } from "./types";
 
 const RASTER_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
@@ -103,6 +102,8 @@ export async function logoFromSvgText(
   raw: string,
   name: string,
 ): Promise<LogoAsset> {
+  // DOMPurify loads only when someone opens an SVG.
+  const { ensureSvgSize, sanitizeSvg } = await import("./sanitize-svg");
   const sanitized = sanitizeSvg(raw);
   const sized = ensureSvgSize(sanitized);
   const blob = new Blob([sized.svg], { type: "image/svg+xml;charset=utf-8" });
