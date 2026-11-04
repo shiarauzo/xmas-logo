@@ -13,6 +13,12 @@ export type AccessoryTransform = {
 
 export type LogoKind = "svg" | "raster";
 
+export type LogoInk = {
+  /** Visible pixels in natural logo units. maxX and maxY are exclusive. */
+  box: { minX: number; minY: number; maxX: number; maxY: number } | null;
+  tone: "light" | "dark";
+};
+
 export type LogoAsset = {
   kind: LogoKind;
   name: string;
@@ -21,4 +27,5 @@ export type LogoAsset = {
   dataUrl?: string;
   naturalWidth: number;
   naturalHeight: number;
+  ink?: LogoInk;
 };

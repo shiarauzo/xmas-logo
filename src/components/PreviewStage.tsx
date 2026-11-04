@@ -228,6 +228,7 @@ export function PreviewStage({
   return (
     <div
       ref={frameRef}
+      data-tone={logo.ink?.tone ?? "light"}
       className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-visible rounded-xl border border-border bg-checker"
       style={{
         paddingTop: `${insets.top * 100}%`,

@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { accessoryBox, exportRasterScale, exportViewBox } from "./geometry.ts";
+import {
+  accessoryBox,
+  exportRasterScale,
+  exportViewBox,
+  gifRasterScale,
+} from "./geometry.ts";
 import { motionOffset } from "./motion.ts";
 
 test("el viewBox de export incluye el adorno encima", () => {
@@ -25,4 +30,24 @@ test("gif frames loop back to rest", () => {
   assert.ok(Object.is(start.dy, 0) || Object.is(start.dy, -0));
   assert.ok(mid.dy < -10);
   assert.equal(spin.rot, 180);
+});
+
+test("el GIF de un logo de 4000 px no pasa de 800 px", () => {
+  const view = { width: 4000, height: 3665 };
+  const scale = gifRasterScale(view.width, view.height);
+  assert.ok(Math.round(view.width * scale) <= 800);
+  assert.ok(Math.round(view.height * scale) <= 800);
+  assert.equal(Math.round(view.width * scale), 800);
+});
+
+test("el GIF de un logo chico se agranda hasta 800 px como mucho", () => {
+  const scale = gifRasterScale(20, 20);
+  assert.ok(20 * scale <= 800);
+  assert.ok(20 * scale >= 160);
+});
+
+test("el GIF de coordenadas enormes queda en 800 px", () => {
+  const scale = gifRasterScale(1_000_000, 250_000);
+  assert.equal(Math.round(1_000_000 * scale), 800);
+  assert.ok(Math.round(250_000 * scale) >= 1);
 });
