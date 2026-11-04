@@ -41,3 +41,14 @@ test("touch device that cannot share files downloads", async () => {
 test("no share API (server or old browser) downloads", async () => {
   assert.equal(await shareFile(file, {}), false);
 });
+
+test("cancelling the share sheet (AbortError) falls back to download", async () => {
+  const d = env(true, { fail: new DOMException("cancelled", "AbortError") });
+  assert.equal(await shareFile(file, d.env), false);
+  assert.equal(d.calls.length, 1);
+});
+
+test("a failed share falls back to download", async () => {
+  const d = env(true, { fail: new DOMException("no activation", "NotAllowedError") });
+  assert.equal(await shareFile(file, d.env), false);
+});

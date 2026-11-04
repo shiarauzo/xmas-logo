@@ -22,17 +22,16 @@ export function canShareFile(file: File, env: ShareEnv = browserEnv()): boolean 
 
 /**
  * Shares a file through the native share sheet on touch devices that can
- * share files. Returns true when the share sheet handled it (or the user
- * dismissed it), false when the caller should fall back to a download.
+ * share files. Returns true only when the file was shared; false (not
+ * supported, cancelled, or failed) means the caller should download it.
  */
 export async function shareFile(file: File, env: ShareEnv = browserEnv()): Promise<boolean> {
   if (!canShareFile(file, env)) return false;
   try {
     await env.share!({ files: [file] });
     return true;
-  } catch (error) {
-    // The user closed the share sheet: don't also download.
-    if (error instanceof DOMException && error.name === "AbortError") return true;
+  } catch {
+    // Cancelled (AbortError) or failed: fall back to a normal download.
     return false;
   }
 }
