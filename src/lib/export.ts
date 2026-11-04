@@ -3,7 +3,12 @@ import {
   ACCESSORY_MOTION_CSS,
   accessoryMarkup,
 } from "./accessories";
-import { accessorySize, exportRasterScale, exportViewBox } from "./geometry";
+import {
+  accessorySize,
+  exportRasterScale,
+  exportViewBox,
+  gifRasterScale,
+} from "./geometry";
 import { motionOffset } from "./motion";
 import { prefixSvgIds } from "./sanitize-svg";
 import type {
@@ -21,6 +26,7 @@ export function buildExportSvg(
   transform: AccessoryTransform,
   motionId: MotionId,
   animated: boolean,
+  layers: "all" | "logo" | "accessory" = "all",
 ): string {
   const width = logo.naturalWidth || 800;
   const height = logo.naturalHeight || 800;
@@ -35,8 +41,10 @@ export function buildExportSvg(
   const ty = (transform.y / 100) * height;
   const view = exportViewBox(width, height, accessoryId, transform);
 
-  let logoLayer: string;
-  if (logo.kind === "svg" && logo.sanitizedSvg) {
+  let logoLayer = "";
+  if (layers === "accessory") {
+    // Drawn on its own over a logo that was rasterized once.
+  } else if (logo.kind === "svg" && logo.sanitizedSvg) {
     const nested = prefixSvgIds(
       logo.sanitizedSvg.replace(/<\?xml[^>]*>/i, "").trim(),
       "logo-",
@@ -47,7 +55,7 @@ export function buildExportSvg(
     logoLayer = `<image id="logo" href="${href}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/>`;
   }
 
-  const art = accessoryMarkup(accessoryId, "acc-");
+  const art = layers === "logo" ? "" : accessoryMarkup(accessoryId, "acc-");
   const motionClass = animated
     ? ` class="xmas-motion xmas-${motionId} xmas-${accessoryId}"`
     : "";
@@ -137,39 +145,49 @@ export async function downloadGif(
     accessoryId,
     transform,
   );
-  const scale = exportRasterScale(view.width, view.height);
+  const scale = gifRasterScale(view.width, view.height);
   const width = Math.max(1, Math.round(view.width * scale));
   const height = Math.max(1, Math.round(view.height * scale));
   const frames = 12;
   const gif = GIFEncoder();
   let palette: number[][] | undefined;
 
+  // The logo is the heavy part (big SVGs, 4000 px PNGs). Draw it once and
+  // only redraw the accessory on each frame.
+  const base = document.createElement("canvas");
+  base.width = width;
+  base.height = height;
+  const baseCtx = base.getContext("2d");
+  if (!baseCtx) throw new Error("Couldn’t create the image. Try again.");
+  baseCtx.fillStyle = "#ffffff";
+  baseCtx.fillRect(0, 0, width, height);
+  await drawSvg(
+    baseCtx,
+    buildExportSvg(logo, accessoryId, transform, "jump", false, "logo"),
+    width,
+    height,
+  );
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) throw new Error("Couldn’t create the image. Try again.");
+
   for (let i = 0; i < frames; i += 1) {
     const mot = motionOffset(motionId, i / frames);
     const framed = buildFrameSvg(logo, accessoryId, transform, mot);
-    const blob = new Blob([framed], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    try {
-      const image = await loadImage(url);
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Couldn’t create the image. Try again.");
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(image, 0, 0, width, height);
-      const pixels = ctx.getImageData(0, 0, width, height).data;
-      palette ??= quantize(pixels, 256);
-      const index = applyPalette(pixels, palette);
-      gif.writeFrame(index, width, height, {
-        palette,
-        delay: 80,
-        repeat: 0,
-      });
-    } finally {
-      URL.revokeObjectURL(url);
-    }
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(base, 0, 0);
+    await drawSvg(ctx, framed, width, height);
+    const pixels = ctx.getImageData(0, 0, width, height).data;
+    palette ??= quantize(pixels, 256);
+    const index = applyPalette(pixels, palette);
+    gif.writeFrame(index, width, height, {
+      palette,
+      delay: 80,
+      repeat: 0,
+    });
   }
 
   gif.finish();
@@ -185,11 +203,34 @@ function buildFrameSvg(
   transform: AccessoryTransform,
   mot: ReturnType<typeof motionOffset>,
 ) {
-  const raw = buildExportSvg(logo, accessoryId, transform, "jump", false);
+  const raw = buildExportSvg(
+    logo,
+    accessoryId,
+    transform,
+    "jump",
+    false,
+    "accessory",
+  );
   return raw.replace(
     /<g id="accessory" transform="([^"]+)">/,
     `<g id="accessory" transform="$1 translate(0 ${(mot.dy / 100) * 48}) rotate(${mot.rot}) scale(${mot.sx} ${mot.sy})">`,
   );
+}
+
+async function drawSvg(
+  ctx: CanvasRenderingContext2D,
+  svg: string,
+  width: number,
+  height: number,
+) {
+  const url = URL.createObjectURL(
+    new Blob([svg], { type: "image/svg+xml;charset=utf-8" }),
+  );
+  try {
+    ctx.drawImage(await loadImage(url), 0, 0, width, height);
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {

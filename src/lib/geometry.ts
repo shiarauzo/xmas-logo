@@ -105,3 +105,10 @@ export function exportRasterScale(viewWidth: number, viewHeight: number) {
   const longest = Math.max(viewWidth, viewHeight, 1);
   return Math.min(8, Math.max(1, 800 / longest));
 }
+
+export const GIF_MAX_SIDE = 800;
+
+export function gifRasterScale(viewWidth: number, viewHeight: number) {
+  const longest = Math.max(viewWidth, viewHeight, 1);
+  return Math.min(8, GIF_MAX_SIDE / longest);
+}
