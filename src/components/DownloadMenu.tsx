@@ -37,7 +37,7 @@ export function DownloadMenu({ disabled, onPick }: DownloadMenuProps) {
     <div ref={rootRef} className="relative">
       <button
         type="button"
-        aria-label="Download"
+        aria-label="Descargar"
         aria-haspopup="menu"
         aria-expanded={open}
         disabled={disabled}

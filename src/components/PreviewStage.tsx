@@ -261,7 +261,7 @@ export function PreviewStage({
           ref={accessoryRef}
           data-accessory
           tabIndex={0}
-          aria-label="Move, resize, or rotate accessory"
+          aria-label="Accesorio: arrástralo o usa las flechas y las teclas + y −"
           className="absolute cursor-grab touch-none select-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background active:cursor-grabbing"
           style={{
             left: `${transform.x}%`,
@@ -289,13 +289,13 @@ export function PreviewStage({
           </div>
           <button
             type="button"
-            aria-label="Rotate"
+            aria-label="Girar"
             className={`${handle} left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 cursor-grab`}
             onPointerDown={(event) => beginSession(event, "rotate")}
           />
           <button
             type="button"
-            aria-label="Resize"
+            aria-label="Cambiar tamaño"
             className={`${handle} right-0 bottom-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize`}
             onPointerDown={(event) => beginSession(event, "scale")}
           />

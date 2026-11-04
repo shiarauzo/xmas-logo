@@ -4,7 +4,7 @@ const FRAGMENT_HREF = /^#/;
 const DATA_HREF = /^data:/i;
 const EXTERNAL_URL = /url\s*\(\s*(['"]?)\s*(https?:|\/\/|\/(?!\/)|[a-z]+:)/i;
 export const BROKEN_SVG_MESSAGE =
-  "That SVG is damaged. Try another, or use a PNG.";
+  "El SVG está dañado. Prueba con otro o exporta tu logo como PNG.";
 
 function isSafeLocalRef(value: string): boolean {
   const trimmed = value.trim();
@@ -19,14 +19,14 @@ function isExternalRef(value: string): boolean {
 
 function parseSvg(xml: string): Document {
   if (typeof DOMParser === "undefined") {
-    throw new Error("Couldn’t read the SVG.");
+    throw new Error("No se pudo leer el SVG. Prueba con un PNG.");
   }
   return new DOMParser().parseFromString(xml, "image/svg+xml");
 }
 
 function serializeSvg(doc: Document): string {
   if (typeof XMLSerializer === "undefined") {
-    throw new Error("Couldn’t read the SVG.");
+    throw new Error("No se pudo leer el SVG. Prueba con un PNG.");
   }
   return new XMLSerializer().serializeToString(doc);
 }
