@@ -282,7 +282,7 @@ export function Studio() {
               ) : null}
             </aside>
 
-            <div className="h-full min-h-[22rem]">
+            <div className="order-first h-full min-h-[22rem] lg:order-none">
               {logo ? (
                 <PreviewStage
                   logo={logo}
