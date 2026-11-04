@@ -1,4 +1,10 @@
-import { ACCESSORY_BASE_SIZE, ACCESSORY_VIEWBOX } from "./constants.ts";
+import {
+  ACCESSORY_BASE_SIZE,
+  ACCESSORY_VIEWBOX,
+  MIN_VISIBLE_SIDE,
+  SCALE_MAX,
+  SCALE_MIN,
+} from "./constants.ts";
 import type {
   AccessoryId,
   AccessoryTransform,
@@ -77,6 +83,16 @@ function accessoryHeightPct(
   return scale * ACCESSORY_BASE_SIZE * 100 * (vbH / vbW) * aspect;
 }
 
+// Lowest scale that keeps the accessory's longest side at
+// MIN_VISIBLE_SIDE of the logo's longest side.
+function visibleScale(id: AccessoryId, scale: number, aspect: number) {
+  const [vbW, vbH] = ACCESSORY_BY_ID[id].viewBox;
+  const logoSide = Math.max(1, 1 / aspect);
+  const floor =
+    (MIN_VISIBLE_SIDE * logoSide) / (ACCESSORY_BASE_SIZE * Math.max(1, vbH / vbW));
+  return Math.min(SCALE_MAX, Math.max(scale, floor, SCALE_MIN));
+}
+
 type PlacementLogo = {
   naturalWidth: number;
   naturalHeight: number;
@@ -124,12 +140,12 @@ export function placementFor(
   // Sizes are relative to the ink width, so a padded file gets the same
   // accessory as a tight one.
   const fit = inkWidth / 100;
-  const scale = (id === "cane" ? 0.4 : 0.48) * fit;
+  const scale = visibleScale(id, (id === "cane" ? 0.4 : 0.48) * fit, aspect);
   const heightPct = accessoryHeightPct(id, scale, aspect);
   const sit = (12 * inkHeight) / 100;
 
   if (id === "beard") {
-    const beardScale = 0.52 * fit;
+    const beardScale = visibleScale(id, 0.52 * fit, aspect);
     const beardHeight = accessoryHeightPct(id, beardScale, aspect);
     return {
       x: inkCenter,

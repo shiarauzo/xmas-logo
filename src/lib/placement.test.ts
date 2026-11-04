@@ -36,7 +36,8 @@ for (const [name, w, h, ink] of cases) {
       assert.ok(Math.abs(box.cx - (ink.minX + ink.maxX) / 2) < inkW * 0.02, `cx ${box.cx}`);
       assert.ok(box.bottom > ink.minY, "toca la tinta");
       assert.ok(box.bottom < ink.minY + inkH * 0.35, `bottom ${box.bottom}`);
-      assert.ok(box.width / inkW > 0.15 && box.width / inkW < 0.4, `ancho ${box.width / inkW}`);
+      // Up to 0.45: a narrow ink in a wide file hits the visible floor.
+      assert.ok(box.width / inkW > 0.15 && box.width / inkW < 0.45, `ancho ${box.width / inkW}`);
     });
   }
 
@@ -70,4 +71,33 @@ test("la escala de Encima nunca queda bajo el mínimo del escenario (si no, el p
     assert.ok(t.scale >= SCALE_MIN, `${id} ${t.scale}`);
     assert.ok(t.scale <= SCALE_MAX);
   }
+});
+
+test("con mucho margen el accesorio no queda diminuto: su lado mayor mide al menos 16% del logo", () => {
+  const cases = [
+    logo(1000, 1000, { minX: 450, minY: 450, maxX: 550, maxY: 500 }),
+    logo(1200, 400, { minX: 500, minY: 180, maxX: 700, maxY: 220 }),
+    logo(300, 900, { minX: 140, minY: 440, maxX: 160, maxY: 460 }),
+  ];
+  for (const l of cases) {
+    const side = Math.max(l.naturalWidth, l.naturalHeight);
+    for (const id of ["hat", "beard", "cane", "elf"] as const) {
+      const t = placementFor("onTop", id, l);
+      const size = accessorySize(id, t.scale, l.naturalWidth);
+      const longest = Math.max(size.width, size.height);
+      assert.ok(longest >= 0.16 * side - 1e-6, `${id} ${l.naturalWidth}x${l.naturalHeight}: ${longest.toFixed(1)} < ${(0.16 * side).toFixed(1)}`);
+    }
+  }
+});
+
+test("el mínimo visible no cambia un logo ajustado", () => {
+  const tight = logo(400, 80, { minX: 0, minY: 0, maxX: 400, maxY: 80 });
+  assert.equal(placementFor("onTop", "hat", tight).scale, 0.48);
+  assert.equal(placementFor("onTop", "cane", tight).scale, 0.4);
+  assert.equal(placementFor("onTop", "beard", tight).scale, 0.52);
+});
+
+test("achicar a mano no baja del mínimo del escenario (0.2)", async () => {
+  const { SCALE_MIN } = await import("./geometry.ts");
+  assert.ok(SCALE_MIN >= 0.2, String(SCALE_MIN));
 });

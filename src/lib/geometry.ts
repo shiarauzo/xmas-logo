@@ -141,10 +141,7 @@ export function stageInsets(
   };
 }
 
-// Scale is a share of the logo file width. Encima sizes by the visible
-// ink, so a small mark in a big file needs a low floor.
-export const SCALE_MIN = 0.04;
-export const SCALE_MAX = 2.4;
+export { SCALE_MAX, SCALE_MIN } from "./constants.ts";
 
 export function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
