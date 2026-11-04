@@ -36,6 +36,7 @@ for (const { id } of MOTIONS) {
       assert.ok(css.includes(pct), `${id} ${pct}`);
       const m = motionOffset(id, at === 1 ? 0.999999 : at);
       if (id === "jump" || id === "bounce") assert.ok(Math.abs(m.dy - values[0]) < 0.05, `${id} dy ${pct}`);
+      if (id === "jump") assert.ok(Math.abs(m.rot - values[1]) < 0.05, `${id} rot ${pct}`);
       if (id === "sway") assert.ok(Math.abs(m.rot - values[0]) < 0.05, `${id} rot ${pct}`);
     }
   });

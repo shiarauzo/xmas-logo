@@ -178,9 +178,16 @@ function beardMarkup(p: string): string {
         <stop offset="0" stop-color="#fffdfb"/>
         <stop offset="1" stop-color="#f0e2d4"/>
       </radialGradient>
-      ${softShadow(p, "#6b5344")}
+      <filter id="${p}edge" x="-22%" y="-22%" width="144%" height="144%">
+        <feMorphology in="SourceAlpha" operator="dilate" radius="1.6" result="grow"/>
+        <feGaussianBlur in="grow" stdDeviation=".8" result="ring"/>
+        <feFlood flood-color="#6b5344" flood-opacity=".38"/>
+        <feComposite in2="ring" operator="in" result="outline"/>
+        <feDropShadow in="SourceGraphic" dx="0" dy="2" stdDeviation="2.4" flood-color="#6b5344" flood-opacity=".28" result="shadowed"/>
+        <feMerge><feMergeNode in="outline"/><feMergeNode in="shadowed"/></feMerge>
+      </filter>
     </defs>
-    <g filter="url(#${p}soft)">
+    <g filter="url(#${p}edge)">
       <ellipse cx="90" cy="78" rx="66" ry="48" fill="#efe3d6"/>
       <circle cx="50" cy="60" r="32" fill="url(#${p}puff)"/>
       <circle cx="90" cy="50" r="36" fill="url(#${p}wool)"/>
@@ -252,8 +259,10 @@ function elfHatMarkup(p: string): string {
 
 export const ACCESSORY_MOTION_CSS = `
 @keyframes xmas-jump {
-  0%, 100% { transform: translate(0, 0); }
-  40% { transform: translate(0, -22%); }
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(0, -22%) rotate(0deg); }
+  60% { transform: translate(0, -22%) rotate(360deg); }
+  85%, 100% { transform: translate(0, 0) rotate(360deg); }
 }
 @keyframes xmas-spin {
   0% { transform: rotate(0deg); }
@@ -277,7 +286,7 @@ export const ACCESSORY_MOTION_CSS = `
 }
 .xmas-jump {
   animation-name: xmas-jump;
-  animation-duration: .85s;
+  animation-duration: 1.4s;
   animation-timing-function: cubic-bezier(.23, 1, .32, 1);
 }
 .xmas-spin {

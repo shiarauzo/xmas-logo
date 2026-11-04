@@ -6,7 +6,7 @@ type Bezier = [number, number, number, number];
 /**
  * The same keyframes, durations, and curves as ACCESSORY_MOTION_CSS, so the
  * GIF moves like the preview. Each key is [offset, ...values]:
- * jump [dy%], spin [deg], sway [deg], bounce [dy%, sx, sy].
+ * jump [dy%, deg] (jump, spin in the air, land), spin [deg], sway [deg], bounce [dy%, sx, sy].
  * dy% is a share of the accessory height, like translate(0, -22%) with
  * transform-box: fill-box.
  */
@@ -15,12 +15,14 @@ export const MOTION_TIMING: Record<
   { durationMs: number; easing: Bezier | null; keys: number[][] }
 > = {
   jump: {
-    durationMs: 850,
+    durationMs: 1400,
     easing: [0.23, 1, 0.32, 1],
     keys: [
-      [0, 0],
-      [0.4, -22],
-      [1, 0],
+      [0, 0, 0],
+      [0.2, -22, 0],
+      [0.6, -22, 360],
+      [0.85, 0, 360],
+      [1, 0, 360],
     ],
   },
   spin: {
@@ -88,7 +90,10 @@ function sample(id: MotionId, t: number) {
 
 export function motionOffset(id: MotionId, t: number) {
   if (id === "spin") return { dx: 0, dy: 0, rot: sample(id, t)[0], sx: 1, sy: 1 };
-  if (id === "jump") return { dx: 0, dy: sample(id, t)[0], rot: 0, sx: 1, sy: 1 };
+  if (id === "jump") {
+    const [dy, rot] = sample(id, t);
+    return { dx: 0, dy, rot, sx: 1, sy: 1 };
+  }
   if (id === "sway") return { dx: 0, dy: 0, rot: sample(id, t)[0], sx: 1, sy: 1 };
   const [dy, sx, sy] = sample(id, t);
   return { dx: 0, dy, rot: 0, sx, sy };
