@@ -23,32 +23,32 @@ export type MotionMeta = {
 export const ACCESSORIES: AccessoryMeta[] = [
   {
     id: "hat",
-    name: "Hat",
-    hint: "Santa hat",
+    name: "Gorro",
+    hint: "Gorro de Navidad",
     viewBox: ACCESSORY_VIEWBOX.hat,
     origin: "50% 86%",
     animation: "xmas-hat",
   },
   {
     id: "beard",
-    name: "Beard",
-    hint: "Santa beard",
+    name: "Barba",
+    hint: "Barba navideña",
     viewBox: ACCESSORY_VIEWBOX.beard,
     origin: "50% 18%",
     animation: "xmas-beard",
   },
   {
     id: "cane",
-    name: "Cane",
-    hint: "Candy cane",
+    name: "Bastón",
+    hint: "Bastón de caramelo",
     viewBox: ACCESSORY_VIEWBOX.cane,
     origin: "50% 92%",
     animation: "xmas-cane",
   },
   {
     id: "elf",
-    name: "Elf",
-    hint: "Elf hat",
+    name: "Duende",
+    hint: "Gorro de duende",
     viewBox: ACCESSORY_VIEWBOX.elf,
     origin: "50% 88%",
     animation: "xmas-elf",
@@ -56,10 +56,10 @@ export const ACCESSORIES: AccessoryMeta[] = [
 ];
 
 export const MOTIONS: MotionMeta[] = [
-  { id: "jump", name: "Jump" },
-  { id: "spin", name: "Spin" },
-  { id: "sway", name: "Sway" },
-  { id: "bounce", name: "Bounce" },
+  { id: "jump", name: "Saltar" },
+  { id: "spin", name: "Girar" },
+  { id: "sway", name: "Mecer" },
+  { id: "bounce", name: "Rebotar" },
 ];
 
 export const ACCESSORY_BY_ID = Object.fromEntries(
