@@ -296,7 +296,6 @@ export function Studio() {
               ) : (
                 <button
                   type="button"
-                  aria-label="Upload logo"
                   onClick={openPicker}
                   onDragOver={onDragOver}
                   onDragLeave={onDragLeave}
