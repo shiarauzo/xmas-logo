@@ -15,7 +15,7 @@ export type ExampleLogo = {
 export const EXAMPLES: ExampleLogo[] = [
   { id: "nido", name: "Nido", src: "/examples/nido.svg", width: 512, height: 120, accessory: "hat", pin: { x: 11.7, y: -21.5, scale: 0.5 } },
   { id: "pino", name: "Pino", src: "/examples/pino.svg", width: 256, height: 320, accessory: "hat" },
-  { id: "kora", name: "Kora", src: "/examples/kora.svg", width: 512, height: 104, accessory: "cane", pin: { x: 95 } },
+  { id: "kora", name: "Kora", src: "/examples/kora.svg", width: 512, height: 104, accessory: "cane", pin: { x: 72, y: 36 } },
   { id: "olivo", name: "Olivo", src: "/examples/olivo.svg", width: 512, height: 140, accessory: "elf", pin: { x: 33.2, y: -11.2, scale: 0.45 } },
   { id: "lumo", name: "Lumo", src: "/examples/lumo.svg", width: 256, height: 256, accessory: "hat" },
   { id: "brisa", name: "Brisa", src: "/examples/brisa.svg", width: 600, height: 150, accessory: "beard", pin: { x: 52, y: 88, scale: 0.45 } },
