@@ -120,7 +120,7 @@ export function Studio() {
       replaceLogo(next);
     } catch (error) {
       if (gen !== uploadGen.current) return;
-      setMessage(error instanceof Error ? error.message : "Couldn’t open.");
+      setMessage(error instanceof Error ? error.message : "Couldn’t open the logo. Try another file.");
     } finally {
       if (gen === uploadGen.current) setBusy(false);
     }
@@ -152,7 +152,7 @@ export function Studio() {
       if (kind === "png") await downloadPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Couldn’t download.");
+      setMessage(error instanceof Error ? error.message : "Couldn’t download. Try again.");
     } finally {
       setBusy(false);
     }

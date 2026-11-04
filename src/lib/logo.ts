@@ -21,7 +21,7 @@ async function readAsDataUrl(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Couldn’t read the file."));
+    reader.onerror = () => reject(new Error("Couldn’t read the file. Try again."));
     reader.readAsDataURL(file);
   });
 }
@@ -34,7 +34,7 @@ function measureImage(src: string): Promise<{ width: number; height: number }> {
         width: image.naturalWidth || 800,
         height: image.naturalHeight || 800,
       });
-    image.onerror = () => reject(new Error("Couldn’t open the logo."));
+    image.onerror = () => reject(new Error("Couldn’t open the logo. Try another file."));
     image.src = src;
   });
 }
@@ -65,7 +65,7 @@ export async function logoFromSvgText(
 
 export async function logoFromFile(file: File): Promise<LogoAsset> {
   if (!isAllowedLogo(file)) {
-    throw new Error("Use an SVG, PNG, JPG, or WebP.");
+    throw new Error("Unsupported format. Upload an SVG, PNG, JPG or WebP.");
   }
 
   const isSvg = file.type === "image/svg+xml" || /\.svg$/i.test(file.name);
