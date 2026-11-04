@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   ACCESSORIES,
   ACCESSORY_MOTION_CSS,
@@ -45,8 +45,14 @@ const btn =
 
 type Tab = "create" | "gallery";
 
+const noopSubscribe = () => () => {};
+const hashIsGallery = () => window.location.hash === "#gallery";
+const serverHashIsGallery = () => false;
+
 export function Studio() {
-  const [tab, setTab] = useState<Tab>("create");
+  const [chosenTab, setTab] = useState<Tab | null>(null);
+  const startsOnGallery = useSyncExternalStore(noopSubscribe, hashIsGallery, serverHashIsGallery);
+  const tab: Tab = chosenTab ?? (startsOnGallery ? "gallery" : "create");
   const [logo, setLogo] = useState<LogoAsset | null>(null);
   const [accessoryId, setAccessoryId] = useState<AccessoryId>("hat");
   const [motionId, setMotionId] = useState<MotionId>("jump");
@@ -72,15 +78,12 @@ export function Studio() {
   }, []);
 
   useEffect(() => {
-    if (window.location.hash === "#gallery") setTab("gallery");
-  }, []);
-
-  useEffect(() => {
+    if (chosenTab === null && hashIsGallery()) return;
     const next = tab === "gallery" ? "#gallery" : "#create";
     if (window.location.hash !== next) {
       window.history.replaceState(null, "", next);
     }
-  }, [tab]);
+  }, [tab, chosenTab]);
 
   const openPicker = () => fileRef.current?.click();
 
