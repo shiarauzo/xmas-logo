@@ -110,7 +110,7 @@ export function Studio() {
     if (!file) return;
     const gen = (uploadGen.current += 1);
     setBusy(true);
-    setMessage("Reading…");
+    setMessage("Cargando logo…");
     try {
       const next = await logoFromFile(file);
       if (gen !== uploadGen.current) {
@@ -120,7 +120,7 @@ export function Studio() {
       replaceLogo(next);
     } catch (error) {
       if (gen !== uploadGen.current) return;
-      setMessage(error instanceof Error ? error.message : "Couldn’t open.");
+      setMessage(error instanceof Error ? error.message : "No se pudo abrir el archivo. Prueba con otro.");
     } finally {
       if (gen === uploadGen.current) setBusy(false);
     }
@@ -152,7 +152,7 @@ export function Studio() {
       if (kind === "png") await downloadPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Couldn’t download.");
+      setMessage(error instanceof Error ? error.message : "No se pudo descargar. Prueba de nuevo.");
     } finally {
       setBusy(false);
     }
