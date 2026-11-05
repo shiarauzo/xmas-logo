@@ -101,3 +101,37 @@ test("achicar a mano no baja del mínimo del escenario (0.2)", async () => {
   const { SCALE_MIN } = await import("./geometry.ts");
   assert.ok(SCALE_MIN >= 0.2, String(SCALE_MIN));
 });
+
+// Tall or square marks: a share of the ink height sank the hat into the
+// logo (12% of a 1000 tall bar is most of the hat).
+const deep: [string, number, number, Ink][] = [
+  ["barra alta", 200, 1000, { minX: 20, minY: 0, maxX: 180, maxY: 1000 }],
+  ["PNG cuadrado 16x16", 16, 16, { minX: 0, minY: 0, maxX: 16, maxY: 16 }],
+  ["marca alta con margen", 400, 400, { minX: 170, minY: 40, maxX: 230, maxY: 360 }],
+];
+for (const [name, w, h, ink] of deep) {
+  for (const id of ["hat", "elf", "cane"] as const) {
+    test(`Encima: ${id} no se hunde en la tinta (${name})`, () => {
+      const t = placementFor("onTop", id, logo(w, h, ink));
+      const box = placed(id, t, w, h);
+      const hatH = box.bottom - box.top;
+      assert.ok(box.bottom > ink.minY, "toca la tinta");
+      assert.ok(box.bottom - ink.minY <= 0.25 * hatH + 1e-6, `hundido ${((box.bottom - ink.minY) / hatH).toFixed(2)} de su alto`);
+    });
+  }
+  test(`Encima: la barba no tapa la tinta (${name})`, () => {
+    const t = placementFor("onTop", "beard", logo(w, h, ink));
+    const box = placed("beard", t, w, h);
+    const beardH = box.bottom - box.top;
+    assert.ok(box.top < ink.maxY, "toca la tinta");
+    assert.ok(ink.maxY - box.top <= 0.15 * beardH + 1e-6, `tapa ${((ink.maxY - box.top) / beardH).toFixed(2)} de su alto`);
+  });
+}
+
+test("un wordmark ajustado queda igual que antes", () => {
+  const l = logo(1000, 200, { minX: 0, minY: 0, maxX: 1000, maxY: 200 });
+  assert.deepEqual(placementFor("onTop", "hat", l), { x: 50, y: -39.75, scale: 0.48, rotation: -8 });
+  assert.deepEqual(placementFor("onTop", "cane", l), { x: 93, y: -57, scale: 0.4, rotation: 10 });
+  assert.ok(Math.abs(placementFor("onTop", "elf", l).y - -50.56) < 1e-6);
+  assert.ok(Math.abs(placementFor("onTop", "beard", l).y - 139.5111111) < 1e-6);
+});
