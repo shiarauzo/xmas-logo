@@ -274,7 +274,7 @@ export async function downloadAvatarPng(
   logo: LogoAsset,
   accessoryId: AccessoryId,
   transform: AccessoryTransform,
-) {
+): Promise<DeliveryMethod> {
   const svg = buildExportSvg(logo, accessoryId, transform, "jump", false);
   const view = exportViewBox(
     logo.naturalWidth || 800,
@@ -299,7 +299,8 @@ export async function downloadAvatarPng(
         "image/png",
       );
     });
-    downloadBlob(png, "xmastize-avatar.png");
+    const file = new File([png], "xmastize-avatar.png", { type: "image/png" });
+    return await shareOrDownload(file, () => downloadBlob(png, file.name));
   } finally {
     URL.revokeObjectURL(url);
   }

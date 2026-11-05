@@ -166,7 +166,7 @@ export function Studio() {
     try {
       let method: "share" | "download" = "download";
       if (kind === "png") method = await downloadPng(logo, accessoryId, transform);
-      else if (kind === "avatar") await downloadAvatarPng(logo, accessoryId, transform);
+      else if (kind === "avatar") method = await downloadAvatarPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
       trackEvent("logo_downloaded", { format: kind, method });
     } catch (error) {
