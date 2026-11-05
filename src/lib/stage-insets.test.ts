@@ -12,10 +12,10 @@ for (const [name, l] of [["logo alto 200x800", tall], ["wordmark 1000x200", wide
   for (const id of ["hat", "elf", "cane", "beard"] as const) {
     test(`el margen del escenario no cambia al arrastrar (${id}, ${name})`, () => {
       const start = placementFor("onTop", id, l);
-      const before = stageInsets(l.naturalWidth, l.naturalHeight, id, start);
+      const before = stageInsets(l, id, start);
       for (const [dx, dy] of [[0, 12.5], [0, 40], [-30, 5], [25, -20], [0, 90]]) {
         const moved = { ...start, x: start.x + dx, y: start.y + dy };
-        assert.deepEqual(stageInsets(l.naturalWidth, l.naturalHeight, id, moved), before, `${dx},${dy}`);
+        assert.deepEqual(stageInsets(l, id, moved), before, `${dx},${dy}`);
       }
     });
   }
@@ -23,14 +23,20 @@ for (const [name, l] of [["logo alto 200x800", tall], ["wordmark 1000x200", wide
 
 test("con el gorro en su lugar el wordmark deja el mismo espacio arriba que antes", () => {
   const t = placementFor("onTop", "hat", wide);
-  const ins = stageInsets(1000, 200, "hat", t);
+  const ins = stageInsets(wide, "hat", t);
   assert.equal(ins.top, 0.24);
   assert.equal(ins.bottom, 0.08);
 });
 
 test("la barba reserva espacio abajo, no arriba", () => {
   const t = placementFor("onTop", "beard", wide);
-  const ins = stageInsets(1000, 200, "beard", t);
+  const ins = stageInsets(wide, "beard", t);
   assert.equal(ins.top, 0.08);
   assert.ok(ins.bottom > 0.08);
+});
+
+test("un logo con margen no pierde tamaño: el gorro descansa dentro del archivo", () => {
+  const padded = { naturalWidth: 400, naturalHeight: 400, ink: { box: { minX: 60, minY: 220, maxX: 340, maxY: 300 }, tone: "light" as const } };
+  const ins = stageInsets(padded, "hat", placementFor("onTop", "hat", padded));
+  assert.equal(ins.top, 0.08);
 });

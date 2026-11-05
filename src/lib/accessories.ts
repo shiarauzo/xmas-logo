@@ -93,7 +93,7 @@ function visibleScale(id: AccessoryId, scale: number, aspect: number) {
   return Math.min(SCALE_MAX, Math.max(scale, floor, SCALE_MIN));
 }
 
-type PlacementLogo = {
+export type PlacementLogo = {
   naturalWidth: number;
   naturalHeight: number;
   ink?: {
