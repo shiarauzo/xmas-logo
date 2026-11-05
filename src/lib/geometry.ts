@@ -112,6 +112,42 @@ export function clampToStage(
   };
 }
 
+/** Step a resize/rotate from `from` toward `to` without leaving `stage`.
+ * Returns `to` when it fits; otherwise the furthest point on the way that
+ * still fits (x/y never move). If `from` itself does not fit, it is kept. */
+export function limitToStage(
+  from: AccessoryTransform,
+  to: AccessoryTransform,
+  id: AccessoryId,
+  logoWidth: number,
+  logoHeight: number,
+  stage: Box,
+): AccessoryTransform {
+  const fits = (t: AccessoryTransform) => {
+    const b = accessoryBox(logoWidth, logoHeight, id, t);
+    const e = 1e-6;
+    return b.minX >= stage.minX - e && b.minY >= stage.minY - e &&
+      b.maxX <= stage.maxX + e && b.maxY <= stage.maxY + e;
+  };
+  if (fits(to)) return to;
+  if (!fits(from)) return from;
+  const at = (k: number): AccessoryTransform => ({
+    ...to,
+    x: from.x,
+    y: from.y,
+    scale: from.scale + (to.scale - from.scale) * k,
+    rotation: from.rotation + (to.rotation - from.rotation) * k,
+  });
+  let lo = 0;
+  let hi = 1;
+  for (let i = 0; i < 24; i += 1) {
+    const mid = (lo + hi) / 2;
+    if (fits(at(mid))) lo = mid;
+    else hi = mid;
+  }
+  return lo === 0 ? from : at(lo);
+}
+
 export function unionBox(a: Box, b: Box): Box {
   return {
     minX: Math.min(a.minX, b.minX),
