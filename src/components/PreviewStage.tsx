@@ -243,7 +243,7 @@ export function PreviewStage({
     <div
       ref={frameRef}
       data-tone={logo.ink?.tone ?? "light"}
-      className="relative flex h-full min-h-[240px] w-full items-center justify-center overflow-visible rounded-xl border border-border bg-checker"
+      className="relative flex h-[min(60svh,36rem)] min-h-[240px] w-full lg:h-full items-center justify-center overflow-visible rounded-xl border border-border bg-checker"
       style={{
         paddingTop: `${insets.top * 100}%`,
         paddingRight: `${insets.right * 100}%`,
@@ -259,7 +259,7 @@ export function PreviewStage({
         src={logo.objectUrl}
         alt={logo.name}
         onLoad={measure}
-        className="relative z-[1] h-full w-full object-contain object-center"
+        className="relative z-[1] h-full min-h-0 w-full min-w-0 object-contain object-center"
         draggable={false}
       />
       <div
