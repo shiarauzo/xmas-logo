@@ -13,7 +13,7 @@ It all runs in the browser. No upload server, no accounts.
 - Download a GIF, PNG, or SVG. On phones and tablets, PNG opens the share sheet
 - Browse example logos in Gallery
 
-SVGs are cleaned with DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`). Scripts, `foreignObject`, external `use`, and `href` / `xlink:href` pointing at other pages or files are stripped. On screen the logo is an `<img>` from a local blob, never injected raw.
+SVGs are cleaned with DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`). Scripts, `<style>`, `foreignObject`, event handlers, external `use`, and `href` / `xlink:href` pointing at other pages or files are stripped. On screen the logo is an `<img>` from a local blob, never injected raw.
 
 On screen and in the SVG, motion stops if the system asks for less movement (`prefers-reduced-motion`). The GIF always moves.
 
