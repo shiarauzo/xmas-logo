@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { shareFile } from "./share.ts";
+import { shareFile, shareOrDownload } from "./share.ts";
 
 const file = new File(["png"], "xmastize-logo.png", { type: "image/png" });
 
@@ -51,4 +51,19 @@ test("cancelling the share sheet (AbortError) falls back to download", async () 
 test("a failed share falls back to download", async () => {
   const d = env(true, { fail: new DOMException("no activation", "NotAllowedError") });
   assert.equal(await shareFile(file, d.env), false);
+});
+
+test("shareOrDownload reports share when the share sheet succeeds", async () => {
+  const d = env(true);
+  let downloads = 0;
+  assert.equal(await shareOrDownload(file, () => (downloads += 1), d.env), "share");
+  assert.equal(downloads, 0);
+});
+
+test("shareOrDownload downloads and reports download otherwise", async () => {
+  for (const d of [env(false), env(true, { fail: new DOMException("x", "AbortError") })]) {
+    let downloads = 0;
+    assert.equal(await shareOrDownload(file, () => (downloads += 1), d.env), "download");
+    assert.equal(downloads, 1);
+  }
 });

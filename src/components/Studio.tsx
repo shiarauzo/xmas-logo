@@ -67,6 +67,7 @@ export function Studio() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [stageFocused, setStageFocused] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const logoRef = useRef<LogoAsset | null>(null);
   const uploadGen = useRef(0);
@@ -158,15 +159,16 @@ export function Studio() {
     if (!logo) return;
     if (kind === "svg") {
       downloadAnimatedSvg(logo, accessoryId, transform, motionId);
-      trackEvent("logo_downloaded", { format: "svg" });
+      trackEvent("logo_downloaded", { format: "svg", method: "download" });
       return;
     }
     setBusy(true);
     try {
-      if (kind === "png") await downloadPng(logo, accessoryId, transform);
+      let method: "share" | "download" = "download";
+      if (kind === "png") method = await downloadPng(logo, accessoryId, transform);
       else if (kind === "avatar") await downloadAvatarPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
-      trackEvent("logo_downloaded", { format: kind });
+      trackEvent("logo_downloaded", { format: kind, method });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Couldn’t download. Try again.");
     } finally {
@@ -237,11 +239,14 @@ export function Studio() {
             <DownloadMenu disabled={!logo || busy} onPick={(kind) => void onDownload(kind)} />
           </div>
         </header>
-        {message ? (
-          <p className="text-sm text-muted-foreground" role="status">
-            {message}
-          </p>
-        ) : null}
+        {/* Always mounted so screen readers announce new messages. */}
+        <p
+          className={message ? "text-sm text-muted-foreground" : "sr-only"}
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </p>
 
         {tab === "gallery" ? (
           <ExampleGallery />
@@ -295,7 +300,7 @@ export function Studio() {
                   );
                 })}
               </div>
-              {logo ? (
+              {logo && stageFocused ? (
                 <p className="mt-3 text-sm text-muted-foreground">
                   Drag the accessory or its handles. Keys: arrows move, + / − resize, [ ] rotate.
                 </p>
@@ -307,7 +312,18 @@ export function Studio() {
               ) : null}
             </aside>
 
-            <div className="xmas-once order-first h-full min-h-[22rem] lg:order-none">
+            <div
+              className="xmas-once order-first h-full min-h-[22rem] lg:order-none"
+              onFocus={(event) => {
+                // Keyboard focus only: a mouse click on the accessory isn't :focus-visible.
+                setStageFocused(event.target.matches(":focus-visible"));
+              }}
+              onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                  setStageFocused(false);
+                }
+              }}
+            >
               {logo ? (
                 <PreviewStage
                   logo={logo}
@@ -332,7 +348,7 @@ export function Studio() {
                       : "border-border bg-muted/20"
                   }`}
                 >
-                  <span className="text-sm text-muted-foreground">Drop your logo here or click to upload <span className="whitespace-nowrap">(SVG, PNG, JPG or WebP)</span></span>
+                  <span className="text-sm text-muted-foreground">Drop your logo here or <span className="pointer-coarse:hidden">click</span><span className="hidden pointer-coarse:inline">tap</span> to upload <span className="whitespace-nowrap">(SVG, PNG, JPG or WebP)</span></span>
                 </button>
               )}
             </div>

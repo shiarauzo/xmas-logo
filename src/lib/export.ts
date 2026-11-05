@@ -4,7 +4,7 @@ import {
   accessoryMarkup,
 } from "./accessories";
 import { AVATAR_SIZE, avatarRect } from "./avatar";
-import { shareFile } from "./share";
+import { shareOrDownload, type DeliveryMethod } from "./share";
 import {
   accessorySize,
   exportRasterScale,
@@ -107,7 +107,7 @@ export async function downloadPng(
   logo: LogoAsset,
   accessoryId: AccessoryId,
   transform: AccessoryTransform,
-) {
+): Promise<DeliveryMethod> {
   const svg = buildExportSvg(logo, accessoryId, transform, "jump", false);
   const view = exportViewBox(
     logo.naturalWidth || 800,
@@ -134,7 +134,7 @@ export async function downloadPng(
       );
     });
     const file = new File([png], "xmastize-logo.png", { type: "image/png" });
-    if (!(await shareFile(file))) downloadBlob(png, file.name);
+    return await shareOrDownload(file, () => downloadBlob(png, file.name));
   } finally {
     URL.revokeObjectURL(url);
   }
