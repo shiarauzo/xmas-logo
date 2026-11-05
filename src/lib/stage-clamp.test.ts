@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { accessoryBox, clampToStage } from "./geometry.ts";
+import { accessoryBox, clampToStage, limitToStage } from "./geometry.ts";
 
 // Logo box 400x200 inside a stage that reaches 40px past it on every side.
 const W = 400;
@@ -30,3 +30,38 @@ test("un adorno más grande que el escenario queda centrado", () => {
   const b = accessoryBox(W, H, "hat", t);
   assert.ok(near((b.minX + b.maxX) / 2, 5) && near((b.minY + b.maxY) / 2, 5));
 });
+
+// After a resize or rotate near an edge the box grows; the clamp pulls the
+// accessory back by the least amount so it ends inside the stage.
+for (const id of ["hat", "elf", "cane", "beard"] as const) {
+  test(`tras agrandar o girar junto al borde el adorno vuelve al escenario (${id})`, () => {
+    const edge = clampToStage({ x: 200, y: 50, scale: 0.4, rotation: 0 }, id, W, H, stage);
+    for (const grown of [{ ...edge, scale: 0.7 }, { ...edge, rotation: 45 }, { ...edge, scale: 0.6, rotation: -60 }]) {
+      const t = clampToStage(grown, id, W, H, stage);
+      const b = accessoryBox(W, H, id, t);
+      assert.ok(b.maxX <= stage.maxX + 1e-6 && b.minX >= stage.minX - 1e-6, "x");
+      assert.ok(b.maxY <= stage.maxY + 1e-6 && b.minY >= stage.minY - 1e-6, "y");
+      assert.equal(t.scale, grown.scale);
+      assert.equal(t.rotation, grown.rotation);
+      assert.ok(t.x <= grown.x, "solo retrocede hacia dentro");
+    }
+  });
+}
+
+// During a resize or rotate the accessory must not leave the stage: the
+// gesture stops at the last size/angle that still fits, never moving x/y.
+for (const id of ["hat", "elf", "cane", "beard"] as const) {
+  test(`al agrandar o girar el adorno se detiene en el borde (${id})`, () => {
+    const from = clampToStage({ x: 200, y: 50, scale: 0.4, rotation: 0 }, id, W, H, stage);
+    for (const to of [{ ...from, scale: 3 }, { ...from, rotation: 90 }, { ...from, scale: 2, rotation: -70 }]) {
+      const t = limitToStage(from, to, id, W, H, stage);
+      const b = accessoryBox(W, H, id, t);
+      assert.ok(b.maxX <= stage.maxX + 1e-6 && b.minX >= stage.minX - 1e-6, "x");
+      assert.ok(b.maxY <= stage.maxY + 1e-6 && b.minY >= stage.minY - 1e-6, "y");
+      assert.equal(t.x, from.x);
+      assert.equal(t.y, from.y);
+    }
+    const ok = { ...from, x: 50, y: 50, scale: 0.45 };
+    assert.deepEqual(limitToStage({ ...ok, scale: 0.4 }, ok, id, W, H, stage), ok);
+  });
+}
