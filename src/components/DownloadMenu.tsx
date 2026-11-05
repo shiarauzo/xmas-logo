@@ -40,6 +40,8 @@ export function DownloadMenu({ disabled, onPick }: DownloadMenuProps) {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
+      // Tab moves on: close the menu and let focus continue naturally.
+      if (event.key === "Tab") setOpen(false);
       if (event.key === "Escape") {
         setOpen(false);
         triggerRef.current?.focus();
