@@ -137,7 +137,18 @@ export function stageInsets(
   id: AccessoryId,
   transform: AccessoryTransform,
 ) {
-  const box = accessoryBox(logoWidth, logoHeight, id, transform);
+  // Room is reserved for the accessory at its resting spot (beard below
+  // the logo, the rest on top, the cane on the right), from its size and
+  // rotation only. Using the live x/y made the padding follow a drag, so
+  // the logo slid under the pointer and reflowed on release.
+  const { height } = accessorySize(id, transform.scale, logoWidth);
+  const h = Math.max(logoHeight, 1);
+  const rest: AccessoryTransform = {
+    ...transform,
+    x: id === "cane" ? 93 : 50,
+    y: id === "beard" ? 100 + (height / 2 / h) * 100 : -(height / 2 / h) * 100,
+  };
+  const box = accessoryBox(logoWidth, logoHeight, id, rest);
   const extra = 0.08;
   const cap = 0.24;
   return {
