@@ -3,6 +3,7 @@ import {
   ACCESSORY_MOTION_CSS,
   accessoryMarkup,
 } from "./accessories";
+import { AVATAR_SIZE, avatarRect } from "./avatar";
 import { shareFile } from "./share";
 import {
   accessorySize,
@@ -266,4 +267,40 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error("Couldn’t create the image. Try again."));
     image.src = src;
   });
+}
+
+/** 400×400 PNG for profile pictures: the export, centered with a margin. */
+export async function downloadAvatarPng(
+  logo: LogoAsset,
+  accessoryId: AccessoryId,
+  transform: AccessoryTransform,
+) {
+  const svg = buildExportSvg(logo, accessoryId, transform, "jump", false);
+  const view = exportViewBox(
+    logo.naturalWidth || 800,
+    logo.naturalHeight || 800,
+    accessoryId,
+    transform,
+  );
+  const url = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }));
+  try {
+    const image = await loadImage(url);
+    const canvas = document.createElement("canvas");
+    canvas.width = AVATAR_SIZE;
+    canvas.height = AVATAR_SIZE;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Couldn’t create the image. Try again.");
+    const r = avatarRect(view.width, view.height);
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(image, r.x, r.y, r.width, r.height);
+    const png = await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (value) => (value ? resolve(value) : reject(new Error("Couldn’t create the image. Try again."))),
+        "image/png",
+      );
+    });
+    downloadBlob(png, "xmastize-avatar.png");
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
