@@ -40,3 +40,18 @@ test("un logo con margen no pierde tamaño: el gorro descansa dentro del archivo
   const ins = stageInsets(padded, "hat", placementFor("onTop", "hat", padded));
   assert.equal(ins.top, 0.08);
 });
+
+// Resizing or rotating the accessory must not shrink the logo: the
+// accessory is clamped to the stage, so padding only covers its rest spot.
+for (const [name, l] of [["logo alto 200x800", tall], ["wordmark 1000x200", wide]] as const) {
+  for (const id of ["hat", "elf", "cane", "beard"] as const) {
+    test(`el margen no cambia al redimensionar o rotar (${id}, ${name})`, () => {
+      const start = placementFor("onTop", id, l);
+      const before = stageInsets(l, id, start);
+      for (const [k, r] of [[2.5, 0], [0.4, 0], [1, 45], [3, -90]]) {
+        const t = { ...start, scale: start.scale * k, rotation: (start.rotation ?? 0) + r };
+        assert.deepEqual(stageInsets(l, id, t), before, `${k},${r}`);
+      }
+    });
+  }
+}
