@@ -8,7 +8,7 @@ import {
   placementFor,
 } from "@/lib/accessories";
 import { trackEvent } from "@/lib/analytics";
-import { downloadAnimatedSvg, downloadGif, downloadPng } from "@/lib/export";
+import { downloadAnimatedSvg, downloadAvatarPng, downloadGif, downloadPng } from "@/lib/export";
 import { logoFromFile, releaseLogo } from "@/lib/logo";
 import type {
   AccessoryId,
@@ -17,7 +17,7 @@ import type {
   MotionId,
 } from "@/lib/types";
 import { AccessoryArt } from "./AccessoryArt";
-import { DownloadMenu } from "./DownloadMenu";
+import { DownloadMenu, type DownloadKind } from "./DownloadMenu";
 import { ExampleGallery } from "./ExampleGallery";
 import { PreviewStage } from "./PreviewStage";
 
@@ -154,7 +154,7 @@ export function Studio() {
     setPlayId((value) => value + 1);
   };
 
-  const onDownload = async (kind: "gif" | "png" | "svg") => {
+  const onDownload = async (kind: DownloadKind) => {
     if (!logo) return;
     if (kind === "svg") {
       downloadAnimatedSvg(logo, accessoryId, transform, motionId);
@@ -164,6 +164,7 @@ export function Studio() {
     setBusy(true);
     try {
       if (kind === "png") await downloadPng(logo, accessoryId, transform);
+      else if (kind === "avatar") await downloadAvatarPng(logo, accessoryId, transform);
       else await downloadGif(logo, accessoryId, transform, motionId);
       trackEvent("logo_downloaded", { format: kind });
     } catch (error) {
