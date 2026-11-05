@@ -236,11 +236,14 @@ export function Studio() {
             <DownloadMenu disabled={!logo || busy} onPick={(kind) => void onDownload(kind)} />
           </div>
         </header>
-        {message ? (
-          <p className="text-sm text-muted-foreground" role="status">
-            {message}
-          </p>
-        ) : null}
+        {/* Always mounted so screen readers announce new messages. */}
+        <p
+          className={message ? "text-sm text-muted-foreground" : "sr-only"}
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </p>
 
         {tab === "gallery" ? (
           <ExampleGallery />
