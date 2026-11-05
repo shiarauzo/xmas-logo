@@ -200,17 +200,17 @@ export function motionExportViewBox(
 export function stageInsets(
   logo: PlacementLogo,
   id: AccessoryId,
-  transform: AccessoryTransform,
 ) {
   // Room is reserved for the accessory at its resting spot (the Encima
   // placement for this logo) at its default size and rotation. Using the
   // live x/y made the padding follow a drag; using the live scale/rotation
-  // made the logo shrink after a resize. The accessory is clamped to the
-  // stage, so it never needs extra room. Exports use exportBounds instead.
+  // made the logo shrink after a resize. The accessory stays inside the
+  // stage because PreviewStage clamps scale, rotation and position during
+  // the gesture (#60), not because of these insets. Exports use
+  // exportBounds instead.
   const logoWidth = logo.naturalWidth;
   const logoHeight = logo.naturalHeight;
   const restAt = placementFor("onTop", id, logo);
-  void transform;
   const rest: AccessoryTransform = restAt;
   const box = accessoryBox(logoWidth, logoHeight, id, rest);
   const extra = 0.08;
