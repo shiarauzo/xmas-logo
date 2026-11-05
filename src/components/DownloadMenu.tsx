@@ -9,9 +9,18 @@ const press =
 const focusRing =
   "outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
+export type DownloadKind = "gif" | "png" | "svg" | "avatar";
+
+const ITEMS: { kind: DownloadKind; label: string }[] = [
+  { kind: "gif", label: "GIF" },
+  { kind: "png", label: "PNG" },
+  { kind: "svg", label: "SVG" },
+  { kind: "avatar", label: "Avatar 400×400" },
+];
+
 type DownloadMenuProps = {
   disabled: boolean;
-  onPick: (kind: "gif" | "png" | "svg") => void;
+  onPick: (kind: DownloadKind) => void;
 };
 
 export function DownloadMenu({ disabled, onPick }: DownloadMenuProps) {
@@ -31,6 +40,8 @@ export function DownloadMenu({ disabled, onPick }: DownloadMenuProps) {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
+      // Tab moves on: close the menu and let focus continue naturally.
+      if (event.key === "Tab") setOpen(false);
       if (event.key === "Escape") {
         setOpen(false);
         triggerRef.current?.focus();
@@ -77,10 +88,10 @@ export function DownloadMenu({ disabled, onPick }: DownloadMenuProps) {
             event.preventDefault();
             items[next].focus();
           }}
-          className="absolute right-0 z-30 mt-1.5 min-w-28 rounded-md border border-border bg-card p-1 text-card-foreground shadow-md"
+          className="absolute right-0 z-30 mt-1.5 min-w-36 rounded-md border border-border bg-card p-1 text-card-foreground shadow-md"
         >
-          {(["GIF", "PNG", "SVG"] as const).map((label, index) => (
-            <li key={label} role="none">
+          {ITEMS.map(({ kind, label }, index) => (
+            <li key={kind} role="none">
               <button
                 ref={(node) => {
                   itemsRef.current[index] = node;
@@ -91,7 +102,7 @@ export function DownloadMenu({ disabled, onPick }: DownloadMenuProps) {
                 className={`flex h-10 w-full items-center rounded-sm px-3 text-left text-sm ${press} ${focusRing} hover:bg-accent hover:text-accent-foreground`}
                 onClick={() => {
                   setOpen(false);
-                  onPick(label.toLowerCase() as "gif" | "png" | "svg");
+                  onPick(kind);
                 }}
               >
                 {label}

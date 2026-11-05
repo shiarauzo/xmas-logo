@@ -17,3 +17,9 @@ test("other keys are not handled", () => {
   assert.equal(menuIndexForKey("a", 0, 3), null);
   assert.equal(menuIndexForKey("ArrowDown", 0, 0), null);
 });
+
+test("four download items (GIF, PNG, SVG, Avatar): End reaches Avatar, Down wraps to GIF", () => {
+  assert.equal(menuIndexForKey("End", 0, 4), 3);
+  assert.equal(menuIndexForKey("ArrowDown", 3, 4), 0);
+  assert.equal(menuIndexForKey("ArrowUp", 0, 4), 3);
+});
