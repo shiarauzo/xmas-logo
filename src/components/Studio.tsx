@@ -310,7 +310,10 @@ export function Studio() {
 
             <div
               className="xmas-once order-first h-full min-h-[22rem] lg:order-none"
-              onFocus={() => setStageFocused(true)}
+              onFocus={(event) => {
+                // Keyboard focus only: a mouse click on the accessory isn't :focus-visible.
+                setStageFocused(event.target.matches(":focus-visible"));
+              }}
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
                   setStageFocused(false);
