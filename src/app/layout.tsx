@@ -17,6 +17,17 @@ const OG_IMAGE = {
   alt: "The Kora logo before and after, with a Santa hat on its A",
 };
 
+// The same card with the hat doing the jump, rendered by npm run og:video.
+// Absolute: Next resolves og:image against metadataBase but not og:video.
+const OG_VIDEO_URL = "https://xmas-logo.vercel.app/og.mp4?v=2";
+const OG_VIDEO = {
+  url: OG_VIDEO_URL,
+  secureUrl: OG_VIDEO_URL,
+  type: "video/mp4",
+  width: 1200,
+  height: 630,
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://xmas-logo.vercel.app"),
   title: "Xmastize your logo",
@@ -29,6 +40,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
     images: [OG_IMAGE],
+    videos: [OG_VIDEO],
   },
   twitter: {
     card: "summary_large_image",
