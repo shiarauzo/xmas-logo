@@ -153,14 +153,21 @@ export function placementFor(
     aspect,
   );
   const heightPct = accessoryHeightPct(id, scale, aspect);
-  const sit = (12 * inkHeight) / 100;
+  // How far the accessory sinks into the ink: 12% of the ink height, but
+  // never more than a quarter of the accessory, or tall and square marks
+  // swallow it.
+  const sit = Math.min((12 * inkHeight) / 100, heightPct / 4);
 
   if (id === "beard") {
     const beardScale = visibleScale(id, fitScale(0.52, 2.17), aspect);
     const beardHeight = accessoryHeightPct(id, beardScale, aspect);
     return {
       x: inkCenter,
-      y: inkTop + inkHeight + beardHeight / 2 - (7 * inkHeight) / 100,
+      y:
+        inkTop +
+        inkHeight +
+        beardHeight / 2 -
+        Math.min((7 * inkHeight) / 100, (15 * beardHeight) / 100),
       scale: beardScale,
       rotation: 0,
     };
