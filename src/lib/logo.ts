@@ -103,9 +103,8 @@ export async function logoFromSvgText(
   name: string,
 ): Promise<LogoAsset> {
   // DOMPurify loads only when someone opens an SVG.
-  const { ensureSvgSize, sanitizeSvg } = await import("./sanitize-svg");
-  const sanitized = sanitizeSvg(raw);
-  const sized = ensureSvgSize(sanitized);
+  const { sanitizeSvgSized } = await import("./sanitize-svg");
+  const sized = sanitizeSvgSized(raw);
   const blob = new Blob([sized.svg], { type: "image/svg+xml;charset=utf-8" });
   const objectUrl = URL.createObjectURL(blob);
   try {

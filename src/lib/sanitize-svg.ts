@@ -40,7 +40,7 @@ function parseLength(value: string | null): number {
   return NaN;
 }
 
-export function sanitizeSvg(raw: string): string {
+function sanitizeToDoc(raw: string): Document {
   assertSvgDrawable(raw);
 
   const purified = DOMPurify.sanitize(raw, {
@@ -123,7 +123,18 @@ export function sanitizeSvg(raw: string): string {
     root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   }
 
-  return serializeSvg(doc);
+  return doc;
+}
+
+export function sanitizeSvg(raw: string): string {
+  return serializeSvg(sanitizeToDoc(raw));
+}
+
+/** sanitizeSvg plus ensureSvgSize on one document: one parse, one serialize. */
+export function sanitizeSvgSized(raw: string) {
+  const doc = sanitizeToDoc(raw);
+  const size = sizeDoc(doc);
+  return { svg: serializeSvg(doc), ...size };
 }
 
 export function ensureSvgSize(svg: string): {
@@ -132,6 +143,11 @@ export function ensureSvgSize(svg: string): {
   height: number;
 } {
   const doc = parseSvg(svg);
+  const size = sizeDoc(doc);
+  return { svg: serializeSvg(doc), ...size };
+}
+
+function sizeDoc(doc: Document) {
   const root = doc.documentElement;
   const viewBox = root.getAttribute("viewBox")?.trim().split(/[\s,]+/);
   const vbW = viewBox && viewBox.length === 4 ? Number(viewBox[2]) : NaN;
@@ -140,6 +156,12 @@ export function ensureSvgSize(svg: string): {
   let width = parseLength(root.getAttribute("width"));
   let height = parseLength(root.getAttribute("height"));
 
+  const hasWidth = Number.isFinite(width) && width > 0;
+  const hasHeight = Number.isFinite(height) && height > 0;
+  const hasBox = Number.isFinite(vbW) && Number.isFinite(vbH) && vbW > 0 && vbH > 0;
+  // With one side given, the other follows the viewBox proportion.
+  if (hasWidth && !hasHeight && hasBox) height = (width * vbH) / vbW;
+  else if (hasHeight && !hasWidth && hasBox) width = (height * vbW) / vbH;
   if (!Number.isFinite(width) || width <= 0) width = Number.isFinite(vbW) ? vbW : 800;
   if (!Number.isFinite(height) || height <= 0) height = Number.isFinite(vbH) ? vbH : 800;
   if (!root.getAttribute("viewBox")) {
@@ -148,5 +170,5 @@ export function ensureSvgSize(svg: string): {
   root.setAttribute("width", String(width));
   root.setAttribute("height", String(height));
 
-  return { svg: serializeSvg(doc), width, height };
+  return { width, height };
 }
