@@ -3,6 +3,7 @@ import {
   ACCESSORY_ORIGIN,
   ACCESSORY_VIEWBOX,
 } from "./constants.ts";
+import { placementFor, type PlacementLogo } from "./accessories.ts";
 import { MOTION_TIMING, motionOffset, type MotionFrame } from "./motion.ts";
 import type { AccessoryId, AccessoryTransform, MotionId } from "./types";
 
@@ -132,12 +133,19 @@ export function motionExportViewBox(
 }
 
 export function stageInsets(
-  logoWidth: number,
-  logoHeight: number,
+  logo: PlacementLogo,
   id: AccessoryId,
   transform: AccessoryTransform,
 ) {
-  const box = accessoryBox(logoWidth, logoHeight, id, transform);
+  // Room is reserved for the accessory at its resting spot (the Encima
+  // placement for this logo), with its live size and rotation. Using the
+  // live x/y made the padding follow a drag, so the logo slid under the
+  // pointer and reflowed on release.
+  const logoWidth = logo.naturalWidth;
+  const logoHeight = logo.naturalHeight;
+  const restAt = placementFor("onTop", id, logo);
+  const rest: AccessoryTransform = { ...transform, x: restAt.x, y: restAt.y };
+  const box = accessoryBox(logoWidth, logoHeight, id, rest);
   const extra = 0.08;
   const cap = 0.24;
   return {

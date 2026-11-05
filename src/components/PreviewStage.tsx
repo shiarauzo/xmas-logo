@@ -72,8 +72,7 @@ export function PreviewStage({
   const accessory = ACCESSORY_BY_ID[accessoryId];
   const [vbW, vbH] = accessory.viewBox;
   const insets = stageInsets(
-    logo.naturalWidth,
-    logo.naturalHeight,
+    logo,
     accessoryId,
     heldTransform ?? transform,
   );
