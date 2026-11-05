@@ -238,11 +238,14 @@ export function Studio() {
             <DownloadMenu disabled={!logo || busy} onPick={(kind) => void onDownload(kind)} />
           </div>
         </header>
-        {message ? (
-          <p className="text-sm text-muted-foreground" role="status">
-            {message}
-          </p>
-        ) : null}
+        {/* Always mounted so screen readers announce new messages. */}
+        <p
+          className={message ? "text-sm text-muted-foreground" : "sr-only"}
+          role="status"
+          aria-live="polite"
+        >
+          {message}
+        </p>
 
         {tab === "gallery" ? (
           <ExampleGallery />
@@ -344,7 +347,7 @@ export function Studio() {
                       : "border-border bg-muted/20"
                   }`}
                 >
-                  <span className="text-sm text-muted-foreground">Drop your logo here or click to upload <span className="whitespace-nowrap">(SVG, PNG, JPG or WebP)</span></span>
+                  <span className="text-sm text-muted-foreground">Drop your logo here or <span className="pointer-coarse:hidden">click</span><span className="hidden pointer-coarse:inline">tap</span> to upload <span className="whitespace-nowrap">(SVG, PNG, JPG or WebP)</span></span>
                 </button>
               )}
             </div>
