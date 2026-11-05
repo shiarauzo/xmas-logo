@@ -65,13 +65,17 @@ export function PreviewStage({
   const imageRef = useRef<HTMLImageElement>(null);
   const sessionRef = useRef<PointerSession | null>(null);
   const [box, setBox] = useState({ x: 0, y: 0, w: 0, h: 0 });
+  // While a pointer drag runs, the stage padding stays at the drag's start, so
+  // the logo (and the layer the drag math is relative to) doesn't move under
+  // the pointer. It catches up when the drag ends.
+  const [heldTransform, setHeldTransform] = useState<AccessoryTransform | null>(null);
   const accessory = ACCESSORY_BY_ID[accessoryId];
   const [vbW, vbH] = accessory.viewBox;
   const insets = stageInsets(
     logo.naturalWidth,
     logo.naturalHeight,
     accessoryId,
-    transform,
+    heldTransform ?? transform,
   );
 
   const measure = useCallback(() => {
@@ -163,6 +167,7 @@ export function PreviewStage({
     const session = sessionRef.current;
     if (!session || session.pointerId !== event.pointerId) return;
     sessionRef.current = null;
+    setHeldTransform(null);
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", endPointer);
     window.removeEventListener("pointercancel", endPointer);
@@ -184,6 +189,7 @@ export function PreviewStage({
       originX: boxRect ? boxRect.left + boxRect.width / 2 : event.clientX,
       originY: boxRect ? boxRect.top + boxRect.height / 2 : event.clientY,
     };
+    setHeldTransform(transform);
     event.currentTarget.setPointerCapture(event.pointerId);
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", endPointer);
