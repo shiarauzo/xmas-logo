@@ -137,15 +137,26 @@ export function placementFor(
   const inkWidth = ((box.maxX - box.minX) / w) * 100;
   const inkHeight = ((box.maxY - box.minY) / h) * 100;
   const inkCenter = inkLeft + inkWidth / 2;
-  // Sizes are relative to the ink width, so a padded file gets the same
-  // accessory as a tight one.
-  const fit = inkWidth / 100;
-  const scale = visibleScale(id, (id === "cane" ? 0.4 : 0.48) * fit, aspect);
+  // Size follows the ink box, not the file box, so a padded file gets the
+  // same accessory as a tight one. Width alone left badges and tall marks
+  // with a tiny hat (#15), so the base grows with the ink's geometric mean:
+  // a 5:1 wordmark keeps the old size, a round badge gets about twice it,
+  // and the accessory never gets wider than the ink.
+  const inkW = Math.max(box.maxX - box.minX, 1);
+  const inkH = Math.max(box.maxY - box.minY, 1);
+  const shape = Math.sqrt((5 * inkH) / inkW);
+  const fitScale = (base: number, cap: number) =>
+    (Math.min(base * shape, cap) * inkW) / w;
+  const scale = visibleScale(
+    id,
+    id === "cane" ? fitScale(0.4, 1.4) : fitScale(0.48, 1.9),
+    aspect,
+  );
   const heightPct = accessoryHeightPct(id, scale, aspect);
   const sit = (12 * inkHeight) / 100;
 
   if (id === "beard") {
-    const beardScale = visibleScale(id, 0.52 * fit, aspect);
+    const beardScale = visibleScale(id, fitScale(0.52, 2.17), aspect);
     const beardHeight = accessoryHeightPct(id, beardScale, aspect);
     return {
       x: inkCenter,

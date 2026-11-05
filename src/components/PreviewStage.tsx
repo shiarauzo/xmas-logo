@@ -1,8 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ACCESSORY_BASE_SIZE, ACCESSORY_BY_ID } from "@/lib/accessories";
-import { SCALE_MAX, SCALE_MIN, clamp, stageInsets } from "@/lib/geometry";
+import { ACCESSORY_BY_ID } from "@/lib/accessories";
+import {
+  SCALE_MAX,
+  SCALE_MIN,
+  accessoryWidthShare,
+  clamp,
+  stageInsets,
+} from "@/lib/geometry";
 import type {
   AccessoryId,
   AccessoryTransform,
@@ -275,7 +281,7 @@ export function PreviewStage({
           style={{
             left: `${transform.x}%`,
             top: `${transform.y}%`,
-            width: `${transform.scale * ACCESSORY_BASE_SIZE * 100}%`,
+            width: `${accessoryWidthShare(transform.scale) * 100}%`,
             aspectRatio: `${vbW} / ${vbH}`,
             transform: `translate(-50%, -50%) rotate(${transform.rotation}deg)`,
           }}

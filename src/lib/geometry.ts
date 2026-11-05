@@ -13,13 +13,20 @@ export type Box = {
   maxY: number;
 };
 
+/** Accessory width as a share of the logo width. The stage uses it as a
+ * CSS percentage of the logo box and exports multiply it by the natural
+ * width, so the ratio is the same at any viewport or output size. */
+export function accessoryWidthShare(scale: number) {
+  return ACCESSORY_BASE_SIZE * scale;
+}
+
 export function accessorySize(
   id: AccessoryId,
   scale: number,
   logoWidth: number,
 ) {
   const [vbW, vbH] = ACCESSORY_VIEWBOX[id];
-  const width = logoWidth * ACCESSORY_BASE_SIZE * scale;
+  const width = logoWidth * accessoryWidthShare(scale);
   return { width, height: width * (vbH / vbW) };
 }
 
