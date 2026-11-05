@@ -189,6 +189,11 @@ export function PreviewStage({
     if (!session || session.pointerId !== event.pointerId) return;
     sessionRef.current = null;
     setHeldTransform(null);
+    // A resize or rotate can grow the box past the stage edge; settle it
+    // back inside once the gesture ends so the pointer never fights it.
+    if (session.mode !== "move") {
+      onChangeRef.current(keepInStage(transformRef.current));
+    }
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", endPointer);
     window.removeEventListener("pointercancel", endPointer);
@@ -232,19 +237,19 @@ export function PreviewStage({
     if (event.key === "ArrowDown") move(0, step);
     if (event.key === "+" || event.key === "=") {
       event.preventDefault();
-      onChange({ ...current, scale: clamp(current.scale + 0.04, SCALE_MIN, SCALE_MAX) });
+      onChange(keepInStage({ ...current, scale: clamp(current.scale + 0.04, SCALE_MIN, SCALE_MAX) }));
     }
     if (event.key === "-" || event.key === "_") {
       event.preventDefault();
-      onChange({ ...current, scale: clamp(current.scale - 0.04, SCALE_MIN, SCALE_MAX) });
+      onChange(keepInStage({ ...current, scale: clamp(current.scale - 0.04, SCALE_MIN, SCALE_MAX) }));
     }
     if (event.key === "[") {
       event.preventDefault();
-      onChange({ ...current, rotation: current.rotation - 8 });
+      onChange(keepInStage({ ...current, rotation: current.rotation - 8 }));
     }
     if (event.key === "]") {
       event.preventDefault();
-      onChange({ ...current, rotation: current.rotation + 8 });
+      onChange(keepInStage({ ...current, rotation: current.rotation + 8 }));
     }
   };
 
