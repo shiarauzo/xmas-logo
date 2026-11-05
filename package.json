@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --experimental-strip-types --test src/**/*.test.ts",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "og:image": "node --experimental-strip-types --no-warnings scripts/render-og-image.ts"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

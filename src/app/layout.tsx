@@ -8,6 +8,15 @@ const geist = Geist({
   subsets: ["latin", "latin-ext"],
 });
 
+// Bump v when og.png changes: WhatsApp and LinkedIn cache previews by URL.
+const OG_IMAGE = {
+  url: "/og.png?v=2",
+  width: 1200,
+  height: 630,
+  type: "image/png",
+  alt: "The Kora logo before and after, with a Santa hat on its A",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://xmas-logo.vercel.app"),
   title: "Xmastize your logo",
@@ -19,11 +28,13 @@ export const metadata: Metadata = {
     siteName: "Xmastize your logo",
     locale: "en_US",
     type: "website",
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: "Xmastize your logo",
     description: "Add a Santa hat, beard, candy cane or elf hat to your logo, then download it as GIF, PNG or SVG.",
+    images: [OG_IMAGE],
   },
   icons: {
     icon: "/favicon.svg",
