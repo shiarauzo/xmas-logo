@@ -30,3 +30,20 @@ test("un adorno más grande que el escenario queda centrado", () => {
   const b = accessoryBox(W, H, "hat", t);
   assert.ok(near((b.minX + b.maxX) / 2, 5) && near((b.minY + b.maxY) / 2, 5));
 });
+
+// After a resize or rotate near an edge the box grows; the clamp pulls the
+// accessory back by the least amount so it ends inside the stage.
+for (const id of ["hat", "elf", "cane", "beard"] as const) {
+  test(`tras agrandar o girar junto al borde el adorno vuelve al escenario (${id})`, () => {
+    const edge = clampToStage({ x: 200, y: 50, scale: 0.4, rotation: 0 }, id, W, H, stage);
+    for (const grown of [{ ...edge, scale: 0.7 }, { ...edge, rotation: 45 }, { ...edge, scale: 0.6, rotation: -60 }]) {
+      const t = clampToStage(grown, id, W, H, stage);
+      const b = accessoryBox(W, H, id, t);
+      assert.ok(b.maxX <= stage.maxX + 1e-6 && b.minX >= stage.minX - 1e-6, "x");
+      assert.ok(b.maxY <= stage.maxY + 1e-6 && b.minY >= stage.minY - 1e-6, "y");
+      assert.equal(t.scale, grown.scale);
+      assert.equal(t.rotation, grown.rotation);
+      assert.ok(t.x <= grown.x, "solo retrocede hacia dentro");
+    }
+  });
+}
