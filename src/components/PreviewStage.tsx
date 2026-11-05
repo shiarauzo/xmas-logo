@@ -7,6 +7,7 @@ import {
   SCALE_MIN,
   accessoryWidthShare,
   clamp,
+  clampToStage,
   stageInsets,
 } from "@/lib/geometry";
 import type {
@@ -155,10 +156,31 @@ export function PreviewStage({
     if (rect.width < 1 || rect.height < 1) return;
     const dx = ((event.clientX - session.startX) / rect.width) * 100;
     const dy = ((event.clientY - session.startY) / rect.height) * 100;
-    onChangeRef.current({
-      ...session.start,
-      x: clamp(session.start.x + dx, -20, 120),
-      y: clamp(session.start.y + dy, -40, 130),
+    onChangeRef.current(
+      keepInStage({
+        ...session.start,
+        x: session.start.x + dx,
+        y: session.start.y + dy,
+      }),
+    );
+  }
+
+  // Keep the accessory's box inside the stage card (inside its border).
+  // Positions already inside pass through untouched, so drags stay 1:1.
+  function keepInStage(next: AccessoryTransform) {
+    const frame = frameRef.current;
+    const layer = layerRef.current;
+    if (!frame || !layer) return next;
+    const f = frame.getBoundingClientRect();
+    const l = layer.getBoundingClientRect();
+    if (l.width < 1 || l.height < 1) return next;
+    const left = f.left + frame.clientLeft - l.left;
+    const top = f.top + frame.clientTop - l.top;
+    return clampToStage(next, accessoryId, l.width, l.height, {
+      minX: left,
+      minY: top,
+      maxX: left + frame.clientWidth,
+      maxY: top + frame.clientHeight,
     });
   }
 
@@ -200,11 +222,9 @@ export function PreviewStage({
     const current = transformRef.current;
     const move = (dx: number, dy: number) => {
       event.preventDefault();
-      onChange({
-        ...current,
-        x: clamp(current.x + dx, -20, 120),
-        y: clamp(current.y + dy, -40, 130),
-      });
+      onChange(
+        keepInStage({ ...current, x: current.x + dx, y: current.y + dy }),
+      );
     };
     if (event.key === "ArrowLeft") move(-step, 0);
     if (event.key === "ArrowRight") move(step, 0);
