@@ -9,7 +9,7 @@ It all runs in the browser. No upload server, no accounts.
 - Upload an SVG, PNG, JPG, or WebP
 - Pick an accessory
 - Drag, resize, and rotate it on the logo
-- Pick a motion: jump (hop, flip, land), spin, sway, bounce
+- Pick a motion: jump (hop, spin, land), spin, sway, bounce
 - Download a GIF, PNG, or SVG. On phones and tablets, PNG opens the share sheet
 - Browse example logos in Gallery
 
