@@ -95,11 +95,7 @@ export function PreviewStage({
   const [heldTransform, setHeldTransform] = useState<AccessoryTransform | null>(null);
   const accessory = ACCESSORY_BY_ID[accessoryId];
   const [vbW, vbH] = accessory.viewBox;
-  const insets = stageInsets(
-    logo,
-    accessoryId,
-    heldTransform ?? transform,
-  );
+  const insets = stageInsets(logo, accessoryId);
 
   const measure = useCallback(() => {
     const next = readLogoBox(frameRef.current, imageRef.current);
