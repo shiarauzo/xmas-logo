@@ -83,6 +83,35 @@ export function accessoryBox(
   return { minX, minY, maxX, maxY };
 }
 
+/** Shift the accessory so its box (rotation and padding included) stays
+ * inside `stage`, given in the same units as the logo size with the logo at
+ * 0,0. A position already inside is returned unchanged; an accessory larger
+ * than the stage is centered on it. */
+export function clampToStage(
+  transform: AccessoryTransform,
+  id: AccessoryId,
+  logoWidth: number,
+  logoHeight: number,
+  stage: Box,
+): AccessoryTransform {
+  if (logoWidth <= 0 || logoHeight <= 0) return transform;
+  const b = accessoryBox(logoWidth, logoHeight, id, transform);
+  const shift = (lo: number, hi: number, min: number, max: number) => {
+    if (hi - lo > max - min) return (min + max) / 2 - (lo + hi) / 2;
+    if (lo < min) return min - lo;
+    if (hi > max) return max - hi;
+    return 0;
+  };
+  const dx = shift(b.minX, b.maxX, stage.minX, stage.maxX);
+  const dy = shift(b.minY, b.maxY, stage.minY, stage.maxY);
+  if (dx === 0 && dy === 0) return transform;
+  return {
+    ...transform,
+    x: transform.x + (dx / logoWidth) * 100,
+    y: transform.y + (dy / logoHeight) * 100,
+  };
+}
+
 export function unionBox(a: Box, b: Box): Box {
   return {
     minX: Math.min(a.minX, b.minX),
