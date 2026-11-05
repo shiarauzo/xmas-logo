@@ -11,7 +11,7 @@ It all runs in the browser. No upload server, no accounts.
 - Drag, resize, and rotate it on the logo
 - Pick a motion: jump (hop, spin, land), spin, sway, bounce
 - Download a GIF, PNG, SVG, or Avatar
-- Avatar is a 400×400 PNG for profile pictures, with the logo centered and a 12% margin on each side so round crops don't cut it
+- Avatar is a 400×400 PNG for profile pictures, with the logo centered and at least a 12% margin on every side so round crops don't cut it
 - On phones and tablets, PNG and Avatar open the share sheet. On desktop they download
 - Browse example logos in Gallery
 
