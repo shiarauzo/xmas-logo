@@ -306,7 +306,7 @@ export function Studio() {
               ) : null}
             </aside>
 
-            <div className="xmas-once h-full min-h-[22rem]">
+            <div className="xmas-once order-first h-full min-h-[22rem] lg:order-none">
               {logo ? (
                 <PreviewStage
                   logo={logo}
