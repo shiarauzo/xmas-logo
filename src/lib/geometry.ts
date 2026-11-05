@@ -141,6 +141,8 @@ export function stageInsets(
   };
 }
 
+export { SCALE_MAX, SCALE_MIN } from "./constants.ts";
+
 export function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }

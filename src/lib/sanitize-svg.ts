@@ -1,4 +1,7 @@
 import DOMPurify from "isomorphic-dompurify";
+import { parseSvg, serializeSvg } from "./svg-ids.ts";
+
+export { prefixSvgIds } from "./svg-ids.ts";
 
 const FRAGMENT_HREF = /^#/;
 const DATA_HREF = /^data:/i;
@@ -15,20 +18,6 @@ function isExternalRef(value: string): boolean {
   const trimmed = value.trim();
   if (!trimmed || isSafeLocalRef(trimmed)) return false;
   return true;
-}
-
-function parseSvg(xml: string): Document {
-  if (typeof DOMParser === "undefined") {
-    throw new Error("Your browser can't read SVGs here. Try a PNG or another browser.");
-  }
-  return new DOMParser().parseFromString(xml, "image/svg+xml");
-}
-
-function serializeSvg(doc: Document): string {
-  if (typeof XMLSerializer === "undefined") {
-    throw new Error("Your browser can't read SVGs here. Try a PNG or another browser.");
-  }
-  return new XMLSerializer().serializeToString(doc);
 }
 
 export function assertSvgDrawable(raw: string) {
@@ -51,7 +40,7 @@ function parseLength(value: string | null): number {
   return NaN;
 }
 
-export function sanitizeSvg(raw: string): string {
+function sanitizeToDoc(raw: string): Document {
   assertSvgDrawable(raw);
 
   const purified = DOMPurify.sanitize(raw, {
@@ -134,50 +123,18 @@ export function sanitizeSvg(raw: string): string {
     root.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   }
 
-  return serializeSvg(doc);
+  return doc;
 }
 
-export function prefixSvgIds(svg: string, prefix: string): string {
-  const doc = parseSvg(svg);
-  const root = doc.documentElement;
-  if (!root) return svg;
+export function sanitizeSvg(raw: string): string {
+  return serializeSvg(sanitizeToDoc(raw));
+}
 
-  const ids = new Map<string, string>();
-  for (const el of Array.from(root.querySelectorAll("[id]"))) {
-    const current = el.getAttribute("id");
-    if (!current) continue;
-    const next = `${prefix}${current}`;
-    ids.set(current, next);
-    el.setAttribute("id", next);
-  }
-
-  const rewrite = (value: string) =>
-    value
-      .replace(/url\(#([^)]+)\)/g, (_, id: string) =>
-        ids.has(id) ? `url(#${ids.get(id)})` : `url(#${id})`,
-      )
-      .replace(/^#(.+)$/, (_, id: string) =>
-        ids.has(id) ? `#${ids.get(id)}` : `#${id}`,
-      );
-
-  for (const el of Array.from(root.querySelectorAll("*"))) {
-    for (const name of ["href", "xlink:href"]) {
-      const value = el.getAttribute(name);
-      if (value?.startsWith("#")) el.setAttribute(name, rewrite(value));
-    }
-    const nsHref = el.getAttributeNS("http://www.w3.org/1999/xlink", "href");
-    if (nsHref?.startsWith("#")) {
-      el.setAttributeNS(
-        "http://www.w3.org/1999/xlink",
-        "href",
-        rewrite(nsHref),
-      );
-    }
-    const style = el.getAttribute("style");
-    if (style?.includes("url(#")) el.setAttribute("style", rewrite(style));
-  }
-
-  return serializeSvg(doc);
+/** sanitizeSvg plus ensureSvgSize on one document: one parse, one serialize. */
+export function sanitizeSvgSized(raw: string) {
+  const doc = sanitizeToDoc(raw);
+  const size = sizeDoc(doc);
+  return { svg: serializeSvg(doc), ...size };
 }
 
 export function ensureSvgSize(svg: string): {
@@ -186,6 +143,11 @@ export function ensureSvgSize(svg: string): {
   height: number;
 } {
   const doc = parseSvg(svg);
+  const size = sizeDoc(doc);
+  return { svg: serializeSvg(doc), ...size };
+}
+
+function sizeDoc(doc: Document) {
   const root = doc.documentElement;
   const viewBox = root.getAttribute("viewBox")?.trim().split(/[\s,]+/);
   const vbW = viewBox && viewBox.length === 4 ? Number(viewBox[2]) : NaN;
@@ -194,6 +156,12 @@ export function ensureSvgSize(svg: string): {
   let width = parseLength(root.getAttribute("width"));
   let height = parseLength(root.getAttribute("height"));
 
+  const hasWidth = Number.isFinite(width) && width > 0;
+  const hasHeight = Number.isFinite(height) && height > 0;
+  const hasBox = Number.isFinite(vbW) && Number.isFinite(vbH) && vbW > 0 && vbH > 0;
+  // With one side given, the other follows the viewBox proportion.
+  if (hasWidth && !hasHeight && hasBox) height = (width * vbH) / vbW;
+  else if (hasHeight && !hasWidth && hasBox) width = (height * vbW) / vbH;
   if (!Number.isFinite(width) || width <= 0) width = Number.isFinite(vbW) ? vbW : 800;
   if (!Number.isFinite(height) || height <= 0) height = Number.isFinite(vbH) ? vbH : 800;
   if (!root.getAttribute("viewBox")) {
@@ -202,5 +170,5 @@ export function ensureSvgSize(svg: string): {
   root.setAttribute("width", String(width));
   root.setAttribute("height", String(height));
 
-  return { svg: serializeSvg(doc), width, height };
+  return { width, height };
 }

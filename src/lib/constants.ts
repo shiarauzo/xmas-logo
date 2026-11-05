@@ -16,3 +16,11 @@ export const ACCESSORY_ORIGIN: Record<AccessoryId, [number, number]> = {
   cane: [0.5, 0.92],
   elf: [0.5, 0.88],
 };
+
+// Scale is a share of the logo file width. Below 0.2 an accessory is
+// smaller than the stage handles on a phone.
+export const SCALE_MIN = 0.2;
+export const SCALE_MAX = 2.4;
+// Smallest longest side an Encima accessory gets, as a share of the
+// logo's longest side, so a mark in a big empty file still shows it.
+export const MIN_VISIBLE_SIDE = 0.16;

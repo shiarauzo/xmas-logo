@@ -309,7 +309,7 @@ export function Studio() {
             </aside>
 
             <div
-              className="xmas-once h-full min-h-[22rem]"
+              className="xmas-once order-first h-full min-h-[22rem] lg:order-none"
               onFocus={() => setStageFocused(true)}
               onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
