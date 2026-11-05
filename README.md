@@ -8,7 +8,8 @@ It all runs in the browser. No upload server, no accounts.
 
 - Upload an SVG, PNG, JPG, or WebP
 - Pick an accessory
-- Drag, resize, and rotate it on the logo
+- Drag, resize, and rotate it on the logo. It stays inside the preview
+- Or use the keyboard: arrow keys move it, + and − resize, [ and ] rotate
 - Pick a motion: jump (hop, spin, land), spin, sway, bounce
 - Download a GIF, PNG, SVG, or Avatar
 - Avatar is a 400×400 PNG for profile pictures, with the logo centered and at least a 12% margin on every side so round crops don't cut it
