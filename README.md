@@ -10,7 +10,7 @@ It all runs in the browser. No upload server, no accounts.
 - Pick an accessory
 - Drag, resize, and rotate it on the logo
 - Pick a motion: jump, spin, sway, bounce
-- Download a GIF, PNG, or SVG
+- Download a GIF, PNG, or SVG. On phones and tablets, PNG opens the share sheet
 - Browse example logos in Gallery
 
 SVGs are cleaned with DOMPurify (`USE_PROFILES: { svg: true, svgFilters: true }`). Scripts, `foreignObject`, external `use`, and `href` / `xlink:href` pointing at other pages or files are stripped. On screen the logo is an `<img>` from a local blob, never injected raw.
