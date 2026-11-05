@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ACCESSORY_BY_ID } from "@/lib/accessories";
 import {
   SCALE_MAX,
@@ -8,6 +8,7 @@ import {
   accessoryWidthShare,
   clamp,
   clampToStage,
+  limitToStage,
   stageInsets,
 } from "@/lib/geometry";
 import type {
@@ -51,6 +52,28 @@ const handleDot = (
   />
 );
 
+// The logo's drawn box relative to the stage frame's border box.
+function readLogoBox(
+  frame: HTMLDivElement | null,
+  image: HTMLImageElement | null,
+) {
+  if (!frame || !image || image.naturalWidth < 1) return null;
+  const frameRect = frame.getBoundingClientRect();
+  const imageRect = image.getBoundingClientRect();
+  const scale = Math.min(
+    imageRect.width / image.naturalWidth,
+    imageRect.height / image.naturalHeight,
+  );
+  const w = image.naturalWidth * scale;
+  const h = image.naturalHeight * scale;
+  return {
+    x: imageRect.left - frameRect.left + (imageRect.width - w) / 2,
+    y: imageRect.top - frameRect.top + (imageRect.height - h) / 2,
+    w,
+    h,
+  };
+}
+
 export function PreviewStage({
   logo,
   accessoryId,
@@ -79,23 +102,8 @@ export function PreviewStage({
   );
 
   const measure = useCallback(() => {
-    const frame = frameRef.current;
-    const image = imageRef.current;
-    if (!frame || !image || image.naturalWidth < 1) return;
-    const frameRect = frame.getBoundingClientRect();
-    const imageRect = image.getBoundingClientRect();
-    const scale = Math.min(
-      imageRect.width / image.naturalWidth,
-      imageRect.height / image.naturalHeight,
-    );
-    const w = image.naturalWidth * scale;
-    const h = image.naturalHeight * scale;
-    setBox({
-      x: imageRect.left - frameRect.left + (imageRect.width - w) / 2,
-      y: imageRect.top - frameRect.top + (imageRect.height - h) / 2,
-      w,
-      h,
-    });
+    const next = readLogoBox(frameRef.current, imageRef.current);
+    if (next) setBox(next);
   }, []);
 
   useEffect(() => {
@@ -110,6 +118,28 @@ export function PreviewStage({
       window.removeEventListener("resize", measure);
     };
   }, [measure, logo.objectUrl, insets.top, insets.right, insets.bottom, insets.left]);
+
+  const anchorRef = useRef<{ x: number; y: number } | null>(null);
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current;
+    if (!anchor || heldTransform) return;
+    anchorRef.current = null;
+    const frame = frameRef.current;
+    const next = readLogoBox(frame, imageRef.current);
+    if (!frame || !next || next.w < 1 || next.h < 1) return;
+    const f = frame.getBoundingClientRect();
+    const current = transformRef.current;
+    const moved = {
+      ...current,
+      x: ((anchor.x - f.left - frame.clientLeft - next.x) / next.w) * 100,
+      y: ((anchor.y - f.top - frame.clientTop - next.y) / next.h) * 100,
+    };
+    const m = stageInLayer(next);
+    const settled = m ? clampToStage(moved, accessoryId, m.w, m.h, m.stage) : moved;
+    if (settled.x !== current.x || settled.y !== current.y) onChangeRef.current(settled);
+    // Only the end of a gesture matters; the helpers read refs and the DOM.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [heldTransform]);
 
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
@@ -130,10 +160,12 @@ export function PreviewStage({
         event.clientY - session.originY,
       );
       if (startDist < 1) return;
-      onChangeRef.current({
-        ...session.start,
-        scale: clamp(session.start.scale * (dist / startDist), SCALE_MIN, SCALE_MAX),
-      });
+      onChangeRef.current(
+        limitInStage({
+          ...session.start,
+          scale: clamp(session.start.scale * (dist / startDist), SCALE_MIN, SCALE_MAX),
+        }),
+      );
       return;
     }
     if (session.mode === "rotate") {
@@ -146,10 +178,12 @@ export function PreviewStage({
         event.clientX - session.originX,
       );
       const deg = ((angle - startAngle) * 180) / Math.PI;
-      onChangeRef.current({
-        ...session.start,
-        rotation: Math.round(session.start.rotation + deg),
-      });
+      onChangeRef.current(
+        limitInStage({
+          ...session.start,
+          rotation: Math.round(session.start.rotation + deg),
+        }),
+      );
       return;
     }
     const rect = layer.getBoundingClientRect();
@@ -165,35 +199,66 @@ export function PreviewStage({
     );
   }
 
-  // Keep the accessory's box inside the stage card (inside its border).
-  // Positions already inside pass through untouched, so drags stay 1:1.
-  function keepInStage(next: AccessoryTransform) {
+  // The stage card (inside its border) in logo-layer pixels, measured from
+  // the live layout, which is held still while a gesture runs (#58).
+  function stageInLayer(at?: { x: number; y: number; w: number; h: number }) {
     const frame = frameRef.current;
     const layer = layerRef.current;
-    if (!frame || !layer) return next;
+    if (!frame || !layer) return null;
     const f = frame.getBoundingClientRect();
     const l = layer.getBoundingClientRect();
-    if (l.width < 1 || l.height < 1) return next;
-    const left = f.left + frame.clientLeft - l.left;
-    const top = f.top + frame.clientTop - l.top;
-    return clampToStage(next, accessoryId, l.width, l.height, {
-      minX: left,
-      minY: top,
-      maxX: left + frame.clientWidth,
-      maxY: top + frame.clientHeight,
-    });
+    const lx = at ? f.left + frame.clientLeft + at.x : l.left;
+    const ly = at ? f.top + frame.clientTop + at.y : l.top;
+    const lw = at ? at.w : l.width;
+    const lh = at ? at.h : l.height;
+    if (lw < 1 || lh < 1) return null;
+    const left = f.left + frame.clientLeft - lx;
+    const top = f.top + frame.clientTop - ly;
+    return {
+      w: lw,
+      h: lh,
+      stage: {
+        minX: left,
+        minY: top,
+        maxX: left + frame.clientWidth,
+        maxY: top + frame.clientHeight,
+      },
+    };
+  }
+
+  // Keep the accessory's box inside the stage card.
+  // Positions already inside pass through untouched, so drags stay 1:1.
+  function keepInStage(next: AccessoryTransform) {
+    const m = stageInLayer();
+    if (!m) return next;
+    return clampToStage(next, accessoryId, m.w, m.h, m.stage);
+  }
+
+  // Resize/rotate stop at the stage edge instead of spilling over it, so
+  // nothing has to be moved (and nothing jumps) when the gesture ends.
+  function limitInStage(next: AccessoryTransform) {
+    const m = stageInLayer();
+    if (!m) return next;
+    return limitToStage(transformRef.current, next, accessoryId, m.w, m.h, m.stage);
   }
 
   function endPointer(event: PointerEvent) {
     const session = sessionRef.current;
     if (!session || session.pointerId !== event.pointerId) return;
     sessionRef.current = null;
-    setHeldTransform(null);
-    // A resize or rotate can grow the box past the stage edge; settle it
-    // back inside once the gesture ends so the pointer never fights it.
-    if (session.mode !== "move") {
-      onChangeRef.current(keepInStage(transformRef.current));
+    // Releasing lets the stage padding catch up with the new size (#58), which
+    // moves the logo box. Remember where the accessory sits on screen so the
+    // layout effect below can keep it there.
+    const node = accessoryRef.current;
+    if (session.mode !== "move" && node) {
+      const s = node.style;
+      const prevTransform = s.transform;
+      s.transform = "translate(-50%, -50%)";
+      const u = node.getBoundingClientRect();
+      s.transform = prevTransform;
+      anchorRef.current = { x: u.left + u.width / 2, y: u.top + u.height / 2 };
     }
+    setHeldTransform(null);
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", endPointer);
     window.removeEventListener("pointercancel", endPointer);
